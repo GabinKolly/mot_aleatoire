@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Upload, Play, RotateCcw, Settings } from 'lucide-react';
-import defaultWordsText from './word-lists/default.txt?raw';
+import dicoEasy from './word-lists/dico_facile.txt?raw';
+import dicoMedium from './word-lists/dico_moyen.txt?raw';
 import animauxWordsText from './word-lists/animaux.txt?raw';
 import couleursWordsText from './word-lists/couleurs.txt?raw';
 import emotionsWordsText from './word-lists/emotions.txt?raw';
 import paysWordsText from './word-lists/pays.txt?raw';
-import dicoFilteredText from './word-lists/dico_filtered.txt?raw';
+import dicoHard from './word-lists/dico_difficile.txt?raw';
 import ODS from './word-lists/dico.txt?raw';
 
 // ============================================================================
@@ -20,18 +21,29 @@ const parseWordsText = (text) =>
     .filter((word) => word.length > 1);
 
 const odsWords = parseWordsText(ODS);
-const defaultWords = parseWordsText(defaultWordsText);
+const easyWords = parseWordsText(dicoEasy);
+const mediumWords = parseWordsText(dicoMedium);
+const hardWords = parseWordsText(dicoHard);
 const animauxWords = parseWordsText(animauxWordsText);
 const couleursWords = parseWordsText(couleursWordsText);
 const emotionsWords = parseWordsText(emotionsWordsText);
-const dictionnaireWords = parseWordsText(dicoFilteredText);
 const paysWords = parseWordsText(paysWordsText);
 
 // To add a new list: create a .txt file and reference it here.
 const WORD_LISTS = {
   default: {
-    name: 'Liste générale',
-    words: defaultWords,
+    name: 'Dictionnaire facile',
+    words: easyWords,
+    bonusCheckWords: odsWords
+  },
+  medium: {
+    name: 'Dictionnaire moyen',
+    words: mediumWords,
+    bonusCheckWords: odsWords
+  },
+  ODS9: {
+    name: 'Dictionnaire difficile (sans accents)',
+    words: hardWords,
     bonusCheckWords: odsWords
   },
   animaux: {
@@ -48,11 +60,6 @@ const WORD_LISTS = {
     name: 'Émotions',
     words: emotionsWords,
     bonusCheckWords: emotionsWords
-  },
-  ODS9: {
-    name: 'Dictionnaire',
-    words: dictionnaireWords,
-    bonusCheckWords: odsWords
   },
   pays: {
     name: 'Pays du monde',
@@ -164,14 +171,14 @@ export default function ScrabbleTrainer() {
   const [selectedPreset, setSelectedPreset] = useState('default');
   const [startTime, setStartTime] = useState(45);
   const [startTimeInput, setStartTimeInput] = useState('45');
-  const [bonusTime, setBonusTime] = useState(30);
-  const [bonusTimeInput, setBonusTimeInput] = useState('30');
+  const [bonusTime, setBonusTime] = useState(10);
+  const [bonusTimeInput, setBonusTimeInput] = useState('10');
   const [alternativeWordBonusTime, setAlternativeWordBonusTime] = useState(5);
   const [alternativeWordBonusTimeInput, setAlternativeWordBonusTimeInput] = useState('5');
-  const [minWordLength, setMinWordLength] = useState(3);
-  const [minWordLengthInput, setMinWordLengthInput] = useState('3');
-  const [maxWordLength, setMaxWordLength] = useState(9);
-  const [maxWordLengthInput, setMaxWordLengthInput] = useState('9');
+  const [minWordLength, setMinWordLength] = useState(4);
+  const [minWordLengthInput, setMinWordLengthInput] = useState('4');
+  const [maxWordLength, setMaxWordLength] = useState(7);
+  const [maxWordLengthInput, setMaxWordLengthInput] = useState('7');
   
   // UI state
   const [draggedIndex, setDraggedIndex] = useState(null);

@@ -532,7 +532,6 @@ export default function ScrabbleTrainer() {
     return (
       <div className="space-y-6">
         <div className="bg-amber-50 py-4 rounded-lg text-center">
-          <div className="text-sm text-gray-600 mb-2">Mot à trouver ({currentWord.length} lettres)</div>
           <div className="flex justify-center gap-1 overflow-x-auto pb-2">
             {tiles.map((tile, index) => (
               <div
@@ -564,9 +563,15 @@ export default function ScrabbleTrainer() {
               </div>
             ))}
           </div>
-          <div className="text-xs text-gray-500 mt-3">
-            Glissez les lettres pour former le mot
-          </div>
+        </div>
+        <div className="text-center">
+          <button
+            onClick={giveUp}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Abandonner
+          </button>
         </div>
       </div>
     );
@@ -645,26 +650,10 @@ export default function ScrabbleTrainer() {
           {showSettings && renderSettings()}
           {renderStatsPanel()}
 
-          {isPlaying && (
-            <div className="text-center mb-6">
-              <button
-                onClick={giveUp}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Abandonner
-              </button>
-            </div>
-          )}
-
           {!isPlaying && !gameOver && !allWordsCompleted && renderStartScreen()}
           {!isPlaying && gameOver && renderGameOverScreen()}
           {!isPlaying && allWordsCompleted && renderVictoryScreen()}
           {isPlaying && renderGameplay()}
-        </div>
-
-        <div className="text-center text-sm text-gray-600 px-4">
-          <p>Chaque mot correct ajoute {bonusTime} secondes au chronomètre</p>
         </div>
       </div>
     </div>

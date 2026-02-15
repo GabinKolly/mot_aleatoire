@@ -19,31 +19,45 @@ const parseWordsText = (text) =>
     .map((word) => word.trim().toUpperCase())
     .filter((word) => word.length > 1);
 
+const odsWords = parseWordsText(ODS);
+const defaultWords = parseWordsText(defaultWordsText);
+const animauxWords = parseWordsText(animauxWordsText);
+const couleursWords = parseWordsText(couleursWordsText);
+const emotionsWords = parseWordsText(emotionsWordsText);
+const dictionnaireWords = parseWordsText(dicoFilteredText);
+const paysWords = parseWordsText(paysWordsText);
+
 // To add a new list: create a .txt file and reference it here.
 const WORD_LISTS = {
   default: {
     name: 'Liste générale',
-    words: parseWordsText(defaultWordsText)
+    words: defaultWords,
+    bonusCheckWords: odsWords
   },
   animaux: {
     name: 'Animaux',
-    words: parseWordsText(animauxWordsText)
+    words: animauxWords,
+    bonusCheckWords: animauxWords
   },
   couleurs: {
     name: 'Couleurs',
-    words: parseWordsText(couleursWordsText)
+    words: couleursWords,
+    bonusCheckWords: couleursWords
   },
   emotions: {
     name: 'Émotions',
-    words: parseWordsText(emotionsWordsText)
+    words: emotionsWords,
+    bonusCheckWords: emotionsWords
   },
   ODS9: {
     name: 'Dictionnaire',
-    words: parseWordsText(dicoFilteredText)
+    words: dictionnaireWords,
+    bonusCheckWords: odsWords
   },
   pays: {
     name: 'Pays du monde',
-    words: parseWordsText(paysWordsText)
+    words: paysWords,
+    bonusCheckWords: paysWords
   },
 };
 
@@ -127,6 +141,7 @@ const BlackButton = ({ className = '', style = {}, children, ...props }) => (
 export default function ScrabbleTrainer() {
   // Game state
   const [allWords, setAllWords] = useState(WORD_LISTS.default.words);
+  const [bonusCheckWords, setBonusCheckWords] = useState(WORD_LISTS.default.bonusCheckWords);
   const [currentWord, setCurrentWord] = useState('');
   const [tiles, setTiles] = useState([]);
   const [usedWords, setUsedWords] = useState([]);
@@ -170,6 +185,7 @@ export default function ScrabbleTrainer() {
     [allWords, minWordLength, maxWordLength]
   );
   const wordsSet = useMemo(() => new Set(words), [words]);
+  const bonusCheckWordsSet = useMemo(() => new Set(bonusCheckWords), [bonusCheckWords]);
   const clearDragState = () => {
     setDraggedIndex(null);
     setTouchDragPosition(null);
@@ -269,7 +285,7 @@ export default function ScrabbleTrainer() {
     if (
       currentWord.length > 0 &&
       currentTileWord !== currentWord &&
-      wordsSet.has(currentTileWord) &&
+      (bonusCheckWordsSet.has(currentTileWord) || wordsSet.has(currentTileWord)) &&
       !bonusAwardedWordsRef.current.has(currentTileWord)
     ) {
       setIsBonusWord(true);
@@ -283,8 +299,9 @@ export default function ScrabbleTrainer() {
   // WORD LIST MANAGEMENT
   // ============================================================================
 
-  const changeWordList = (newWords, newName, newPreset = 'custom') => {
+  const changeWordList = (newWords, newName, newPreset = 'custom', newBonusCheckWords = newWords) => {
     setAllWords(newWords);
+    setBonusCheckWords(newBonusCheckWords);
     setWordListName(newName);
     setSelectedPreset(newPreset);
     resetGameState();
@@ -292,7 +309,7 @@ export default function ScrabbleTrainer() {
 
   const handlePresetChange = (presetKey) => {
     const list = WORD_LISTS[presetKey];
-    changeWordList(list.words, list.name, presetKey);
+    changeWordList(list.words, list.name, presetKey, list.bonusCheckWords);
   };
 
   const handleFileUpload = (e) => {

@@ -70,7 +70,7 @@ const canBeSolvedWithOneMove = (shuffled, original) => {
 
 // Calculate tile size based on screen width and number of letters
 const calculateTileSize = (screenWidth, numLetters) => {
-  const usableWidth = screenWidth - 80;
+  const usableWidth = screenWidth;
   const calculatedSize = Math.min(100, Math.floor((usableWidth / numLetters) / 1.2));
   return {
     size: calculatedSize,
@@ -531,7 +531,7 @@ export default function ScrabbleTrainer() {
 
     return (
       <div className="space-y-6">
-        <div className="bg-amber-50 py-4 rounded-lg text-center">
+        <div className="relative left-1/2 w-screen -translate-x-1/2 bg-amber-50 py-4 text-center">
           <div className="flex justify-center gap-1 overflow-x-auto pb-2">
             {tiles.map((tile, index) => (
               <div

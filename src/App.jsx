@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Upload, Play, RotateCcw, Settings } from 'lucide-react';
 import defaultWordsText from './word-lists/default.txt?raw';
 import animauxWordsText from './word-lists/animaux.txt?raw';
@@ -138,6 +139,7 @@ export default function ScrabbleTrainer() {
   
   // UI state
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [touchDragPosition, setTouchDragPosition] = useState(null);
   const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 400);
   
   const fileInputRef = useRef(null);
@@ -147,12 +149,17 @@ export default function ScrabbleTrainer() {
     [allWords, minWordLength, maxWordLength]
   );
   const wordsSet = useMemo(() => new Set(words), [words]);
+  const clearDragState = () => {
+    setDraggedIndex(null);
+    setTouchDragPosition(null);
+  };
 
   // ============================================================================
   // GAME LOGIC
   // ============================================================================
 
   const resetGameState = () => {
+    clearDragState();
     setIsPlaying(false);
     setGameOver(false);
     setAllWordsCompleted(false);
@@ -167,6 +174,7 @@ export default function ScrabbleTrainer() {
   };
 
   const startGame = () => {
+    clearDragState();
     setTimeLeft(startTime);
     setScore(0);
     setWordsFound(0);
@@ -181,6 +189,7 @@ export default function ScrabbleTrainer() {
   };
 
   const giveUp = () => {
+    clearDragState();
     setIsPlaying(false);
     setGameOver(true);
   };
@@ -189,6 +198,7 @@ export default function ScrabbleTrainer() {
     const availableWords = words.filter(w => !usedWords.includes(w));
     
     if (availableWords.length === 0) {
+      clearDragState();
       setIsPlaying(false);
       setAllWordsCompleted(true);
       return;
@@ -318,16 +328,38 @@ export default function ScrabbleTrainer() {
   };
 
   const handleDragEnd = () => {
-    setDraggedIndex(null);
+    clearDragState();
     checkWord();
   };
 
-  const handleTouchStart = (e, index) => setDraggedIndex(index);
+  const handleTouchStart = (e, index) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    setDraggedIndex(index);
+    setTouchDragPosition({
+      x: touch.clientX,
+      y: touch.clientY
+    });
+  };
 
   const handleTouchMove = (e) => {
     if (draggedIndex === null) return;
-    
+
+    e.preventDefault();
     const touch = e.touches[0];
+    if (!touch) return;
+
+    setTouchDragPosition((prev) =>
+      prev
+        ? {
+            ...prev,
+            x: touch.clientX,
+            y: touch.clientY
+          }
+        : null
+    );
+
     const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
     const tileElement = elements.find(el => el.dataset.tileIndex);
     
@@ -354,6 +386,7 @@ export default function ScrabbleTrainer() {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (timeLeft === 0 && isPlaying) {
+      clearDragState();
       setIsPlaying(false);
       setGameOver(true);
     }
@@ -544,6 +577,7 @@ export default function ScrabbleTrainer() {
                 onTouchStart={(e) => handleTouchStart(e, index)}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleDragEnd}
+                onTouchCancel={handleDragEnd}
                 className={`border-2 rounded-lg flex items-center justify-center font-bold cursor-move select-none shadow-md hover:shadow-lg transition-all flex-shrink-0 ${
                   isCorrect 
                     ? 'bg-green-400 border-green-500 text-white scale-110' 
@@ -551,18 +585,44 @@ export default function ScrabbleTrainer() {
                       ? 'bg-yellow-300 border-yellow-500 text-yellow-900 scale-105'
                       : 'bg-amber-100 border-amber-300 text-amber-900'
                 } ${
-                  draggedIndex === index ? 'opacity-50' : ''
+                  draggedIndex === index && touchDragPosition ? 'opacity-0' : draggedIndex === index ? 'opacity-50' : ''
                 }`}
                 style={{
                   width: `${tileSize}px`,
                   height: `${tileSize}px`,
-                  fontSize: `${fontSize}px`
+                  fontSize: `${fontSize}px`,
+                  touchAction: 'none'
                 }}
               >
                 {tile.letter}
               </div>
             ))}
           </div>
+          {touchDragPosition &&
+            draggedIndex !== null &&
+            tiles[draggedIndex] &&
+            typeof document !== 'undefined' &&
+            createPortal(
+              <div
+                className={`fixed border-2 rounded-lg flex items-center justify-center font-bold select-none shadow-xl z-50 pointer-events-none ${
+                  isCorrect
+                    ? 'bg-green-400 border-green-500 text-white scale-110'
+                    : isBonusWord
+                      ? 'bg-yellow-300 border-yellow-500 text-yellow-900 scale-105'
+                      : 'bg-amber-100 border-amber-300 text-amber-900'
+                }`}
+                style={{
+                  width: `${tileSize}px`,
+                  height: `${tileSize}px`,
+                  fontSize: `${fontSize}px`,
+                  left: `${touchDragPosition.x - tileSize / 2}px`,
+                  top: `${touchDragPosition.y - tileSize / 2}px`
+                }}
+              >
+                {tiles[draggedIndex].letter}
+              </div>,
+              document.body
+            )}
         </div>
         <div className="text-center">
           <button

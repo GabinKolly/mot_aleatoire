@@ -466,14 +466,14 @@ export default function ScrabbleTrainer() {
   );
 
   const renderSettings = () => (
-    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-      <h2 className="text-lg font-semibold mb-4">Paramètres</h2>
+    <div className="mb-6 p-4 bg-gray-50 rounded-lg text-black">
+      <h2 className="text-lg font-semibold mb-4 text-black">Paramètres</h2>
       
-      <div className="mb-6 pb-6 border-b">
-        <h3 className="text-md font-medium mb-3">Temps de jeu</h3>
+      <div className="mb-6 pb-6">
+        <h3 className="text-md font-medium mb-3 text-black">Temps de jeu</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-black mb-1">
               Temps de départ (secondes)
             </label>
             <input
@@ -508,7 +508,7 @@ export default function ScrabbleTrainer() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-black mb-1">
               Bonus par mot (secondes)
             </label>
             <input
@@ -543,7 +543,7 @@ export default function ScrabbleTrainer() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-black mb-1">
               Bonus mot alternatif (secondes)
             </label>
             <input
@@ -580,11 +580,11 @@ export default function ScrabbleTrainer() {
         </div>
       </div>
 
-      <div className="mb-6 pb-6 border-b">
-        <h3 className="text-md font-medium mb-3">Longueur des mots</h3>
+      <div className="mb-6 pb-6">
+        <h3 className="text-md font-medium mb-3 text-black">Longueur des mots</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-black mb-1">
               Longueur minimale
             </label>
             <input
@@ -604,7 +604,7 @@ export default function ScrabbleTrainer() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-black mb-1">
               Longueur maximale
             </label>
             <input
@@ -619,13 +619,13 @@ export default function ScrabbleTrainer() {
         </div>
       </div>
 
-      <h3 className="text-md font-medium mb-3">Liste de mots</h3>
-      <p className="text-sm text-gray-600 mb-4">
+      <h3 className="text-md font-medium mb-3 text-black">Liste de mots</h3>
+      <p className="text-sm text-black mb-4">
         Liste actuelle: {wordListName} ({words.length} mots disponibles)
       </p>
       
       <div className="space-y-3 mb-4">
-        <p className="text-sm font-medium text-gray-700">Listes prédéfinies:</p>
+        <p className="text-sm font-medium text-black">Listes prédéfinies:</p>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(WORD_LISTS).map(([key, list]) => (
             <button
@@ -645,8 +645,8 @@ export default function ScrabbleTrainer() {
         </div>
       </div>
 
-      <div className="border-t pt-4">
-        <p className="text-sm font-medium text-gray-700 mb-2">Ou importez votre liste:</p>
+      <div className="pt-4">
+        <p className="text-sm font-medium text-black mb-2">Ou importez votre liste:</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -661,7 +661,7 @@ export default function ScrabbleTrainer() {
           <Upload className="w-4 h-4" />
           Importer un fichier .txt
         </BlackButton>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-black mt-2">
           Format: un mot par ligne
         </p>
       </div>

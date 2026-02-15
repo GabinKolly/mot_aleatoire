@@ -104,6 +104,22 @@ const shuffleWord = (word) => {
   return shuffled;
 };
 
+const BLACK_BUTTON_STYLE = Object.freeze({
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  border: '1px solid #000000'
+});
+
+const BlackButton = ({ className = '', style = {}, children, ...props }) => (
+  <button
+    {...props}
+    className={className}
+    style={{ ...BLACK_BUTTON_STYLE, ...style }}
+  >
+    {children}
+  </button>
+);
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -132,10 +148,15 @@ export default function ScrabbleTrainer() {
   const [wordListName, setWordListName] = useState(WORD_LISTS.default.name);
   const [selectedPreset, setSelectedPreset] = useState('default');
   const [startTime, setStartTime] = useState(45);
+  const [startTimeInput, setStartTimeInput] = useState('45');
   const [bonusTime, setBonusTime] = useState(30);
+  const [bonusTimeInput, setBonusTimeInput] = useState('30');
   const [alternativeWordBonusTime, setAlternativeWordBonusTime] = useState(5);
+  const [alternativeWordBonusTimeInput, setAlternativeWordBonusTimeInput] = useState('5');
   const [minWordLength, setMinWordLength] = useState(3);
+  const [minWordLengthInput, setMinWordLengthInput] = useState('3');
   const [maxWordLength, setMaxWordLength] = useState(9);
+  const [maxWordLengthInput, setMaxWordLengthInput] = useState('9');
   
   // UI state
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -294,17 +315,33 @@ export default function ScrabbleTrainer() {
   };
 
   const handleMinWordLengthChange = (value) => {
+    setMinWordLengthInput(value);
+    if (value === '') return;
+
     const parsed = parseInt(value, 10);
-    const nextMin = Number.isNaN(parsed) ? 2 : Math.max(2, parsed);
+    if (Number.isNaN(parsed)) return;
+
+    const nextMin = Math.max(2, parsed);
     setMinWordLength(nextMin);
-    setMaxWordLength((prevMax) => Math.max(prevMax, nextMin));
+    setMinWordLengthInput(String(nextMin));
+    setMaxWordLength((prevMax) => {
+      const nextMax = Math.max(prevMax, nextMin);
+      setMaxWordLengthInput(String(nextMax));
+      return nextMax;
+    });
     resetGameState();
   };
 
   const handleMaxWordLengthChange = (value) => {
+    setMaxWordLengthInput(value);
+    if (value === '') return;
+
     const parsed = parseInt(value, 10);
-    const nextMax = Number.isNaN(parsed) ? maxWordLength : Math.max(2, parsed);
-    setMaxWordLength(Math.max(nextMax, minWordLength));
+    if (Number.isNaN(parsed)) return;
+
+    const nextMax = Math.max(2, parsed, minWordLength);
+    setMaxWordLength(nextMax);
+    setMaxWordLengthInput(String(nextMax));
     resetGameState();
   };
 
@@ -443,8 +480,30 @@ export default function ScrabbleTrainer() {
               type="number"
               min="30"
               max="300"
-              value={startTime}
-              onChange={(e) => setStartTime(parseInt(e.target.value) || 90)}
+              value={startTimeInput}
+              onChange={(e) => {
+                const { value } = e.target;
+                setStartTimeInput(value);
+                if (value === '') return;
+                const parsed = parseInt(value, 10);
+                if (Number.isNaN(parsed)) return;
+                const next = Math.min(300, Math.max(30, parsed));
+                setStartTime(next);
+              }}
+              onBlur={() => {
+                if (startTimeInput === '') {
+                  setStartTimeInput(String(startTime));
+                  return;
+                }
+                const parsed = parseInt(startTimeInput, 10);
+                if (Number.isNaN(parsed)) {
+                  setStartTimeInput(String(startTime));
+                  return;
+                }
+                const next = Math.min(300, Math.max(30, parsed));
+                setStartTime(next);
+                setStartTimeInput(String(next));
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -456,8 +515,30 @@ export default function ScrabbleTrainer() {
               type="number"
               min="5"
               max="60"
-              value={bonusTime}
-              onChange={(e) => setBonusTime(parseInt(e.target.value) || 30)}
+              value={bonusTimeInput}
+              onChange={(e) => {
+                const { value } = e.target;
+                setBonusTimeInput(value);
+                if (value === '') return;
+                const parsed = parseInt(value, 10);
+                if (Number.isNaN(parsed)) return;
+                const next = Math.min(60, Math.max(5, parsed));
+                setBonusTime(next);
+              }}
+              onBlur={() => {
+                if (bonusTimeInput === '') {
+                  setBonusTimeInput(String(bonusTime));
+                  return;
+                }
+                const parsed = parseInt(bonusTimeInput, 10);
+                if (Number.isNaN(parsed)) {
+                  setBonusTimeInput(String(bonusTime));
+                  return;
+                }
+                const next = Math.min(60, Math.max(5, parsed));
+                setBonusTime(next);
+                setBonusTimeInput(String(next));
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -469,10 +550,29 @@ export default function ScrabbleTrainer() {
               type="number"
               min="0"
               max="30"
-              value={alternativeWordBonusTime}
+              value={alternativeWordBonusTimeInput}
               onChange={(e) => {
-                const parsed = parseInt(e.target.value, 10);
-                setAlternativeWordBonusTime(Number.isNaN(parsed) ? 5 : Math.max(0, parsed));
+                const { value } = e.target;
+                setAlternativeWordBonusTimeInput(value);
+                if (value === '') return;
+                const parsed = parseInt(value, 10);
+                if (Number.isNaN(parsed)) return;
+                const next = Math.min(30, Math.max(0, parsed));
+                setAlternativeWordBonusTime(next);
+              }}
+              onBlur={() => {
+                if (alternativeWordBonusTimeInput === '') {
+                  setAlternativeWordBonusTimeInput(String(alternativeWordBonusTime));
+                  return;
+                }
+                const parsed = parseInt(alternativeWordBonusTimeInput, 10);
+                if (Number.isNaN(parsed)) {
+                  setAlternativeWordBonusTimeInput(String(alternativeWordBonusTime));
+                  return;
+                }
+                const next = Math.min(30, Math.max(0, parsed));
+                setAlternativeWordBonusTime(next);
+                setAlternativeWordBonusTimeInput(String(next));
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -490,8 +590,16 @@ export default function ScrabbleTrainer() {
             <input
               type="number"
               min="2"
-              value={minWordLength}
+              value={minWordLengthInput}
               onChange={(e) => handleMinWordLengthChange(e.target.value)}
+              onBlur={() => {
+                if (minWordLengthInput === '') {
+                  setMinWordLengthInput(String(minWordLength));
+                } else {
+                  setMinWordLengthInput(String(minWordLength));
+                  setMaxWordLengthInput(String(maxWordLength));
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -502,8 +610,9 @@ export default function ScrabbleTrainer() {
             <input
               type="number"
               min={minWordLength}
-              value={maxWordLength}
+              value={maxWordLengthInput}
               onChange={(e) => handleMaxWordLengthChange(e.target.value)}
+              onBlur={() => setMaxWordLengthInput(String(maxWordLength))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -545,13 +654,13 @@ export default function ScrabbleTrainer() {
           onChange={handleFileUpload}
           className="hidden"
         />
-        <button
+        <BlackButton
           onClick={() => fileInputRef.current?.click()}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Upload className="w-4 h-4" />
           Importer un fichier .txt
-        </button>
+        </BlackButton>
         <p className="text-xs text-gray-500 mt-2">
           Format: un mot par ligne
         </p>
@@ -625,13 +734,13 @@ export default function ScrabbleTrainer() {
             )}
         </div>
         <div className="text-center">
-          <button
+          <BlackButton
             onClick={giveUp}
             className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             Abandonner
-          </button>
+          </BlackButton>
         </div>
       </div>
     );
@@ -647,13 +756,13 @@ export default function ScrabbleTrainer() {
           Vous avez obtenu un score de {score} !
         </p>
       </div>
-      <button
+      <BlackButton
         onClick={startGame}
         className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-xl font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg"
       >
         <RotateCcw className="w-6 h-6" />
         Recommencer
-      </button>
+      </BlackButton>
     </div>
   );
 
@@ -667,25 +776,25 @@ export default function ScrabbleTrainer() {
           Votre score est {score} !
         </p>
       </div>
-      <button
+      <BlackButton
         onClick={startGame}
         className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-xl font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg"
       >
         <Play className="w-6 h-6" />
         Nouvelle partie
-      </button>
+      </BlackButton>
     </div>
   );
 
   const renderStartScreen = () => (
     <div className="text-center py-12">
-      <button
+      <BlackButton
         onClick={startGame}
         className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-xl font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg"
       >
         <Play className="w-6 h-6" />
         Commencer
-      </button>
+      </BlackButton>
     </div>
   );
 

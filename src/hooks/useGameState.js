@@ -185,6 +185,7 @@ function reducer(state, action) {
 export function useGameState({ initialPresetKey = 'default' } = {}) {
   const [state, dispatch] = useReducer(reducer, initialPresetKey, getInitialState);
   const bonusAwardedWordsRef = useRef(new Set());
+  const currentWordScoredRef = useRef(false);
 
   const words = useMemo(
     () =>
@@ -231,6 +232,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
     }
 
     bonusAwardedWordsRef.current = new Set();
+    currentWordScoredRef.current = false;
     const shuffled = shuffleWord(word);
     const nextTiles = shuffled.map((letter, index) => ({ letter, id: index }));
 
@@ -238,9 +240,14 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
   }, [state.usedWords, words]);
 
   const checkWord = useCallback(() => {
+    if (currentWordScoredRef.current) {
+      return;
+    }
+
     const currentTileWord = state.tiles.map((tile) => tile.letter).join('');
 
     if (currentTileWord === state.currentWord && state.currentWord.length > 0) {
+      currentWordScoredRef.current = true;
       dispatch({ type: 'CORRECT_WORD' });
       setTimeout(() => pickNewWord(), 800);
       return;
@@ -286,6 +293,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
 
   const resetBonusRef = useCallback(() => {
     bonusAwardedWordsRef.current = new Set();
+    currentWordScoredRef.current = false;
   }, []);
 
   const startGame = useCallback(() => {

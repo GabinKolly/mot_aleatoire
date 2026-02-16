@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom';
 import { RotateCcw } from 'lucide-react';
 import BlackButton from './BlackButton';
 import Tile from './Tile';
+import { getTileVisualClasses } from './tileVisualState';
 
 const calculateTileSize = (screenWidth, numLetters) => {
   const usableWidth = screenWidth;
@@ -60,13 +61,9 @@ export default function GameScreen({
           typeof document !== 'undefined' &&
           createPortal(
             <div
-              className={`fixed border-2 rounded-lg flex items-center justify-center font-bold select-none shadow-xl z-50 pointer-events-none ${
-                isCorrect
-                  ? 'bg-green-400 border-green-500 text-white scale-110'
-                  : isBonusWord
-                    ? 'bg-yellow-300 border-yellow-500 text-yellow-900 scale-105'
-                    : 'bg-amber-100 border-amber-300 text-amber-900'
-              }`}
+              className={`fixed border-2 rounded-lg flex items-center justify-center font-bold select-none shadow-xl z-50 pointer-events-none ${getTileVisualClasses(
+                { isCorrect, isBonusWord }
+              )}`}
               style={{
                 width: `${tileSize}px`,
                 height: `${tileSize}px`,

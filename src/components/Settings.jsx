@@ -1,6 +1,7 @@
 import { Upload } from 'lucide-react';
 import { useRef } from 'react';
 import BlackButton from './BlackButton';
+import SettingsNumberField from './SettingsNumberField';
 
 export default function Settings({
   wordListName,
@@ -27,6 +28,54 @@ export default function Settings({
   onMaxWordLengthBlur,
 }) {
   const fileInputRef = useRef(null);
+  const gameTimeFields = [
+    {
+      key: 'startTime',
+      label: 'Temps de départ (secondes)',
+      min: 30,
+      max: 300,
+      value: startTimeInput,
+      onChange: onStartTimeChange,
+      onBlur: onStartTimeBlur,
+    },
+    {
+      key: 'bonusTime',
+      label: 'Bonus par mot (secondes)',
+      min: 5,
+      max: 60,
+      value: bonusTimeInput,
+      onChange: onBonusTimeChange,
+      onBlur: onBonusTimeBlur,
+    },
+    {
+      key: 'alternativeBonusTime',
+      label: 'Bonus mot alternatif (secondes)',
+      min: 0,
+      max: 30,
+      value: alternativeWordBonusTimeInput,
+      onChange: onAlternativeWordBonusTimeChange,
+      onBlur: onAlternativeWordBonusTimeBlur,
+    },
+  ];
+
+  const wordLengthFields = [
+    {
+      key: 'minWordLength',
+      label: 'Longueur minimale',
+      min: 2,
+      value: minWordLengthInput,
+      onChange: onMinWordLengthChange,
+      onBlur: onMinWordLengthBlur,
+    },
+    {
+      key: 'maxWordLength',
+      label: 'Longueur maximale',
+      min: minWordLength,
+      value: maxWordLengthInput,
+      onChange: onMaxWordLengthChange,
+      onBlur: onMaxWordLengthBlur,
+    },
+  ];
 
   return (
     <div className="mb-6 p-4 bg-gray-50 rounded-lg text-black">
@@ -35,73 +84,33 @@ export default function Settings({
       <div className="mb-6 pb-6">
         <h3 className="text-md font-medium mb-3 text-black">Temps de jeu</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm text-black mb-1">Temps de départ (secondes)</label>
-            <input
-              type="number"
-              min="30"
-              max="300"
-              value={startTimeInput}
-              onChange={(event) => onStartTimeChange(event.target.value)}
-              onBlur={onStartTimeBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          {gameTimeFields.map((field) => (
+            <SettingsNumberField
+              key={field.key}
+              label={field.label}
+              value={field.value}
+              min={field.min}
+              max={field.max}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm text-black mb-1">Bonus par mot (secondes)</label>
-            <input
-              type="number"
-              min="5"
-              max="60"
-              value={bonusTimeInput}
-              onChange={(event) => onBonusTimeChange(event.target.value)}
-              onBlur={onBonusTimeBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-black mb-1">Bonus mot alternatif (secondes)</label>
-            <input
-              type="number"
-              min="0"
-              max="30"
-              value={alternativeWordBonusTimeInput}
-              onChange={(event) => onAlternativeWordBonusTimeChange(event.target.value)}
-              onBlur={onAlternativeWordBonusTimeBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+          ))}
         </div>
       </div>
 
       <div className="mb-6 pb-6">
         <h3 className="text-md font-medium mb-3 text-black">Longueur des mots</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-black mb-1">Longueur minimale</label>
-            <input
-              type="number"
-              min="2"
-              value={minWordLengthInput}
-              onChange={(event) => onMinWordLengthChange(event.target.value)}
-              onBlur={onMinWordLengthBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          {wordLengthFields.map((field) => (
+            <SettingsNumberField
+              key={field.key}
+              label={field.label}
+              value={field.value}
+              min={field.min}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm text-black mb-1">Longueur maximale</label>
-            <input
-              type="number"
-              min={minWordLength}
-              value={maxWordLengthInput}
-              onChange={(event) => onMaxWordLengthChange(event.target.value)}
-              onBlur={onMaxWordLengthBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+          ))}
         </div>
       </div>
 

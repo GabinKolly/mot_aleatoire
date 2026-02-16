@@ -1,5 +1,5 @@
 import { Play, RotateCcw } from 'lucide-react';
-import BlackButton from './BlackButton';
+import GameActionButton from './GameActionButton';
 
 export default function GameOverScreen({
   variant,
@@ -31,13 +31,9 @@ export default function GameOverScreen({
         )}
       </div>
 
-      <BlackButton
-        onClick={onRestart}
-        className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-xl font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg"
-      >
-        {isVictory ? <Play className="w-6 h-6" /> : <RotateCcw className="w-6 h-6" />}
+      <GameActionButton onClick={onRestart} icon={isVictory ? Play : RotateCcw}>
         {isVictory ? 'Nouvelle partie' : 'Recommencer'}
-      </BlackButton>
+      </GameActionButton>
     </div>
   );
 }

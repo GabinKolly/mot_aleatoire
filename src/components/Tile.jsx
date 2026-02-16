@@ -1,3 +1,5 @@
+import { getTileVisualClasses } from './tileVisualState';
+
 export default function Tile({
   tile,
   index,
@@ -25,13 +27,9 @@ export default function Tile({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       onTouchCancel={onTouchEnd}
-      className={`border-2 rounded-lg flex items-center justify-center font-bold cursor-move select-none shadow-md hover:shadow-lg transition-all flex-shrink-0 ${
-        isCorrect
-          ? 'bg-green-400 border-green-500 text-white scale-110'
-          : isBonusWord
-            ? 'bg-yellow-300 border-yellow-500 text-yellow-900 scale-105'
-            : 'bg-amber-100 border-amber-300 text-amber-900'
-      } ${
+      className={`border-2 rounded-lg flex items-center justify-center font-bold cursor-move select-none shadow-md hover:shadow-lg transition-all flex-shrink-0 ${getTileVisualClasses(
+        { isCorrect, isBonusWord }
+      )} ${
         draggedIndex === index && touchDragPosition
           ? 'opacity-0'
           : draggedIndex === index

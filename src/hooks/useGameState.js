@@ -83,6 +83,30 @@ const getInitialState = (initialPresetKey) => {
   };
 };
 
+const buildRoundResetState = (state, overrides = {}) => ({
+  ...state,
+  isPlaying: false,
+  gameOver: false,
+  allWordsCompleted: false,
+  usedWords: [],
+  score: 0,
+  wordsFound: 0,
+  timeLeft: 0,
+  currentWord: '',
+  tiles: [],
+  isCorrect: false,
+  isBonusWord: false,
+  ...overrides,
+});
+
+const buildWordListChangeState = (state, payload) =>
+  buildRoundResetState(state, {
+    allWords: payload.words,
+    bonusCheckWords: payload.bonusCheckWords,
+    wordListName: payload.name,
+    selectedPreset: payload.selectedPreset,
+  });
+
 function reducer(state, action) {
   switch (action.type) {
     case 'TOGGLE_SETTINGS':
@@ -96,73 +120,22 @@ function reducer(state, action) {
     case 'SET_MIN_WORD_LENGTH': {
       const nextMin = action.payload;
       const nextMax = Math.max(state.maxWordLength, nextMin);
-      return {
-        ...state,
+      return buildRoundResetState(state, {
         minWordLength: nextMin,
         maxWordLength: nextMax,
-        isPlaying: false,
-        gameOver: false,
-        allWordsCompleted: false,
-        usedWords: [],
-        score: 0,
-        wordsFound: 0,
-        timeLeft: 0,
-        currentWord: '',
-        tiles: [],
-        isCorrect: false,
-        isBonusWord: false,
-      };
+      });
     }
     case 'SET_MAX_WORD_LENGTH':
-      return {
-        ...state,
+      return buildRoundResetState(state, {
         maxWordLength: action.payload,
-        isPlaying: false,
-        gameOver: false,
-        allWordsCompleted: false,
-        usedWords: [],
-        score: 0,
-        wordsFound: 0,
-        timeLeft: 0,
-        currentWord: '',
-        tiles: [],
-        isCorrect: false,
-        isBonusWord: false,
-      };
+      });
     case 'CHANGE_WORD_LIST':
-      return {
-        ...state,
-        allWords: action.payload.words,
-        bonusCheckWords: action.payload.bonusCheckWords,
-        wordListName: action.payload.name,
-        selectedPreset: action.payload.selectedPreset,
-        isPlaying: false,
-        gameOver: false,
-        allWordsCompleted: false,
-        usedWords: [],
-        score: 0,
-        wordsFound: 0,
-        timeLeft: 0,
-        currentWord: '',
-        tiles: [],
-        isCorrect: false,
-        isBonusWord: false,
-      };
+      return buildWordListChangeState(state, action.payload);
     case 'START_GAME':
-      return {
-        ...state,
+      return buildRoundResetState(state, {
         timeLeft: state.startTime,
-        score: 0,
-        wordsFound: 0,
         isPlaying: true,
-        usedWords: [],
-        gameOver: false,
-        allWordsCompleted: false,
-        currentWord: '',
-        tiles: [],
-        isCorrect: false,
-        isBonusWord: false,
-      };
+      });
     case 'GIVE_UP':
       return { ...state, isPlaying: false, gameOver: true };
     case 'SET_TILES': {

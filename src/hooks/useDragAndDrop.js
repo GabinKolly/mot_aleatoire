@@ -38,9 +38,13 @@ export function useDragAndDrop({ setTiles, onDropComplete }) {
     reorderTiles(from, index);
   };
 
-  const handleDragEnd = () => {
+  const finishDrop = () => {
     clearDragState();
     onDropComplete();
+  };
+
+  const handleDragEnd = () => {
+    finishDrop();
   };
 
   const handleTouchStart = (event, index) => {
@@ -88,8 +92,7 @@ export function useDragAndDrop({ setTiles, onDropComplete }) {
   };
 
   const handleTouchEnd = () => {
-    clearDragState();
-    onDropComplete();
+    finishDrop();
   };
 
   return {

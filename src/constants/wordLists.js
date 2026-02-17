@@ -4,6 +4,7 @@ import animauxWordsText from '../word-lists/animaux.txt?raw';
 import couleursWordsText from '../word-lists/couleurs.txt?raw';
 import emotionsWordsText from '../word-lists/emotions.txt?raw';
 import paysWordsText from '../word-lists/pays.txt?raw';
+import motsAvecWWordsText from '../word-lists/mots_avec_w.txt?raw';
 import dicoHard from '../word-lists/dico_difficile.txt?raw';
 import ODS from '../word-lists/dico.txt?raw';
 
@@ -21,6 +22,7 @@ const animauxWords = parseWordsText(animauxWordsText);
 const couleursWords = parseWordsText(couleursWordsText);
 const emotionsWords = parseWordsText(emotionsWordsText);
 const paysWords = parseWordsText(paysWordsText);
+const motsAvecWWords = parseWordsText(motsAvecWWordsText);
 
 export const WORD_LISTS = {
   default: {
@@ -57,5 +59,10 @@ export const WORD_LISTS = {
     name: 'Pays du monde',
     words: paysWords,
     bonusCheckWords: paysWords,
+  },
+  motsAvecW: {
+    name: 'Mots avec W',
+    words: motsAvecWWords,
+    bonusCheckWords: motsAvecWWords,
   },
 };

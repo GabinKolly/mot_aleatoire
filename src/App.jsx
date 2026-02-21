@@ -16,7 +16,7 @@ export default function App() {
     startGame,
     giveUp,
     toggleSettings,
-    changeCustomWordList,
+    addAddedWordList,
     setTiles,
     checkWord,
   } = actions;
@@ -51,7 +51,7 @@ export default function App() {
 
       const parsed = parseWordsText(text).filter((word) => word.length > 0);
       if (parsed.length > 0) {
-        changeCustomWordList(parsed, file.name);
+        addAddedWordList(parsed, file.name);
       }
     };
     reader.readAsText(file);

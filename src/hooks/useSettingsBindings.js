@@ -5,6 +5,9 @@ import { useClampedInput } from './useClampedInput';
 export function useSettingsBindings({ state, actions, onFileUpload }) {
   const {
     changePreset,
+    selectAddedWordList,
+    renameAddedWordList,
+    removeAddedWordList,
     setStartTime,
     setBonusTime,
     setAlternativeWordBonusTime,
@@ -14,20 +17,20 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
 
   const startTimeInput = useClampedInput({
     initialValue: state.startTime,
-    min: 30,
-    max: 300,
+    min: 1,
+    max: 9999,
     parse: (value) => Number.parseInt(value, 10),
   });
   const bonusTimeInput = useClampedInput({
     initialValue: state.bonusTime,
-    min: 5,
-    max: 60,
+    min: 0,
+    max: 9999,
     parse: (value) => Number.parseInt(value, 10),
   });
   const alternativeWordBonusTimeInput = useClampedInput({
     initialValue: state.alternativeWordBonusTime,
     min: 0,
-    max: 30,
+    max: 9999,
     parse: (value) => Number.parseInt(value, 10),
   });
   const minWordLengthInput = useClampedInput({
@@ -67,8 +70,13 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
     wordListName: state.wordListName,
     wordsCount: state.words.length,
     selectedPreset: state.selectedPreset,
+    selectedAddedListId: state.selectedAddedListId,
+    addedWordLists: state.addedWordLists,
     wordLists: WORD_LISTS,
     onPresetChange: changePreset,
+    onSelectAddedList: selectAddedWordList,
+    onRenameAddedList: renameAddedWordList,
+    onRemoveAddedList: removeAddedWordList,
     onFileUpload,
     startTimeInput: startTimeInput.inputValue,
     onStartTimeChange: startTimeInput.onChange,

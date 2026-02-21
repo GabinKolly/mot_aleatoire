@@ -7,8 +7,13 @@ export default function Settings({
   wordListName,
   wordsCount,
   selectedPreset,
+  selectedAddedListId,
+  addedWordLists,
   wordLists,
   onPresetChange,
+  onSelectAddedList,
+  onRenameAddedList,
+  onRemoveAddedList,
   onFileUpload,
   startTimeInput,
   onStartTimeChange,
@@ -32,8 +37,8 @@ export default function Settings({
     {
       key: 'startTime',
       label: 'Temps de départ (secondes)',
-      min: 30,
-      max: 300,
+      min: 1,
+      max: 9999,
       value: startTimeInput,
       onChange: onStartTimeChange,
       onBlur: onStartTimeBlur,
@@ -41,8 +46,8 @@ export default function Settings({
     {
       key: 'bonusTime',
       label: 'Bonus par mot (secondes)',
-      min: 5,
-      max: 60,
+      min: 0,
+      max: 9999,
       value: bonusTimeInput,
       onChange: onBonusTimeChange,
       onBlur: onBonusTimeBlur,
@@ -51,7 +56,7 @@ export default function Settings({
       key: 'alternativeBonusTime',
       label: 'Bonus mot alternatif (secondes)',
       min: 0,
-      max: 30,
+      max: 9999,
       value: alternativeWordBonusTimeInput,
       onChange: onAlternativeWordBonusTimeChange,
       onBlur: onAlternativeWordBonusTimeBlur,
@@ -128,8 +133,14 @@ export default function Settings({
               onClick={() => onPresetChange(key)}
               className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
               style={{
-                backgroundColor: selectedPreset === key ? '#059669' : '#6b7280',
-                borderColor: selectedPreset === key ? '#059669' : '#6b7280',
+                backgroundColor:
+                  selectedAddedListId === null && selectedPreset === key
+                    ? '#059669'
+                    : '#6b7280',
+                borderColor:
+                  selectedAddedListId === null && selectedPreset === key
+                    ? '#059669'
+                    : '#6b7280',
                 borderWidth: '1px',
                 borderStyle: 'solid',
               }}
@@ -138,6 +149,59 @@ export default function Settings({
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="mb-6 pb-6">
+        <h3 className="text-md font-medium mb-3 text-black">Listes ajoutées</h3>
+        {addedWordLists.length === 0 ? (
+          <p className="text-sm text-gray-600">Aucune liste ajoutée pour le moment.</p>
+        ) : (
+          <div className="space-y-2">
+            {addedWordLists.map((list) => (
+              <div
+                key={`${list.id}-${list.name}`}
+                className="flex flex-col md:flex-row gap-2 md:items-center"
+              >
+                <button
+                  onClick={() => onSelectAddedList(list.id)}
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                  style={{
+                    backgroundColor:
+                      selectedAddedListId === list.id ? '#059669' : '#6b7280',
+                    borderColor: selectedAddedListId === list.id ? '#059669' : '#6b7280',
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                  }}
+                >
+                  Utiliser
+                </button>
+                <input
+                  type="text"
+                  defaultValue={list.name}
+                  onBlur={(event) => {
+                    const input = event.currentTarget;
+                    const proposedName = input.value;
+                    onRenameAddedList(list.id, proposedName);
+                    input.value =
+                      proposedName.trim().length === 0 ? list.name : proposedName.trim();
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.currentTarget.blur();
+                    }
+                  }}
+                  className="px-3 py-2 border rounded-lg text-sm"
+                />
+                <button
+                  onClick={() => onRemoveAddedList(list.id)}
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 border border-red-600 hover:bg-red-700 transition-colors"
+                >
+                  Supprimer
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pt-4">

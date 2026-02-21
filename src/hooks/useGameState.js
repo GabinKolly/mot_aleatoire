@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useReducer, useCallback } from 'react';
 import { WORD_LISTS } from '../constants/wordLists';
+import { loadPersistedConfig, savePersistedConfig } from '../constants/persistence';
 
 const canBeSolvedWithOneMove = (shuffled, original) => {
   const shuffledArray = shuffled.split('');
@@ -55,12 +56,79 @@ const shuffleWord = (word) => {
   return shuffled;
 };
 
+const createListNameResolver = (existingNames) => {
+  const used = new Set(existingNames);
+
+  return (rawName) => {
+    const baseName =
+      typeof rawName === 'string' && rawName.trim().length > 0
+        ? rawName.trim()
+        : 'Liste ajoutee';
+
+    if (!used.has(baseName)) {
+      used.add(baseName);
+      return baseName;
+    }
+
+    let suffix = 2;
+    let candidate = `${baseName} (${suffix})`;
+    while (used.has(candidate)) {
+      suffix += 1;
+      candidate = `${baseName} (${suffix})`;
+    }
+    used.add(candidate);
+    return candidate;
+  };
+};
+
+const generateAddedListId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `added-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const resolveActiveList = ({ selectedPreset, selectedAddedListId, addedWordLists }) => {
+  const selectedAddedList = addedWordLists.find((list) => list.id === selectedAddedListId);
+  if (selectedAddedList) {
+    return {
+      allWords: selectedAddedList.words,
+      bonusCheckWords: selectedAddedList.words,
+      wordListName: selectedAddedList.name,
+      selectedPreset: WORD_LISTS[selectedPreset] ? selectedPreset : 'default',
+      selectedAddedListId: selectedAddedList.id,
+    };
+  }
+
+  const resolvedPreset = WORD_LISTS[selectedPreset] ? selectedPreset : 'default';
+  const preset = WORD_LISTS[resolvedPreset];
+  return {
+    allWords: preset.words,
+    bonusCheckWords: preset.bonusCheckWords,
+    wordListName: preset.name,
+    selectedPreset: resolvedPreset,
+    selectedAddedListId: null,
+  };
+};
+
 const getInitialState = (initialPresetKey) => {
-  const initialList = WORD_LISTS[initialPresetKey] ?? WORD_LISTS.default;
+  const fallbackPreset = WORD_LISTS[initialPresetKey] ? initialPresetKey : 'default';
+  const persisted = loadPersistedConfig({ presetKeys: Object.keys(WORD_LISTS) });
+
+  const selectedPreset = persisted?.list?.selectedPreset ?? fallbackPreset;
+  const selectedAddedListId = persisted?.list?.selectedAddedListId ?? null;
+  const addedWordLists = persisted?.list?.added ?? [];
+  const resolvedList = resolveActiveList({
+    selectedPreset,
+    selectedAddedListId,
+    addedWordLists,
+  });
+  const persistedSettings = persisted?.settings;
 
   return {
-    allWords: initialList.words,
-    bonusCheckWords: initialList.bonusCheckWords,
+    allWords: resolvedList.allWords,
+    bonusCheckWords: resolvedList.bonusCheckWords,
     currentWord: '',
     tiles: [],
     usedWords: [],
@@ -73,13 +141,15 @@ const getInitialState = (initialPresetKey) => {
     gameOver: false,
     allWordsCompleted: false,
     showSettings: false,
-    wordListName: initialList.name,
-    selectedPreset: initialPresetKey,
-    startTime: 45,
-    bonusTime: 10,
-    alternativeWordBonusTime: 5,
-    minWordLength: 4,
-    maxWordLength: 7,
+    wordListName: resolvedList.wordListName,
+    selectedPreset: resolvedList.selectedPreset,
+    selectedAddedListId: resolvedList.selectedAddedListId,
+    addedWordLists,
+    startTime: persistedSettings?.startTime ?? 45,
+    bonusTime: persistedSettings?.bonusTime ?? 10,
+    alternativeWordBonusTime: persistedSettings?.alternativeWordBonusTime ?? 5,
+    minWordLength: persistedSettings?.minWordLength ?? 4,
+    maxWordLength: persistedSettings?.maxWordLength ?? 7,
   };
 };
 
@@ -99,13 +169,17 @@ const buildRoundResetState = (state, overrides = {}) => ({
   ...overrides,
 });
 
-const buildWordListChangeState = (state, payload) =>
-  buildRoundResetState(state, {
-    allWords: payload.words,
-    bonusCheckWords: payload.bonusCheckWords,
-    wordListName: payload.name,
-    selectedPreset: payload.selectedPreset,
+const buildListSelectionState = (state, selection) => {
+  const resolved = resolveActiveList(selection);
+  return buildRoundResetState(state, {
+    allWords: resolved.allWords,
+    bonusCheckWords: resolved.bonusCheckWords,
+    wordListName: resolved.wordListName,
+    selectedPreset: resolved.selectedPreset,
+    selectedAddedListId: resolved.selectedAddedListId,
+    addedWordLists: selection.addedWordLists,
   });
+};
 
 function reducer(state, action) {
   switch (action.type) {
@@ -129,8 +203,62 @@ function reducer(state, action) {
       return buildRoundResetState(state, {
         maxWordLength: action.payload,
       });
-    case 'CHANGE_WORD_LIST':
-      return buildWordListChangeState(state, action.payload);
+    case 'CHANGE_PRESET':
+      return buildListSelectionState(state, {
+        selectedPreset: action.payload,
+        selectedAddedListId: null,
+        addedWordLists: state.addedWordLists,
+      });
+    case 'SELECT_ADDED_LIST':
+      return buildListSelectionState(state, {
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: action.payload,
+        addedWordLists: state.addedWordLists,
+      });
+    case 'ADD_ADDED_LIST': {
+      const nextAddedWordLists = [...state.addedWordLists, action.payload];
+      return buildListSelectionState(state, {
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: action.payload.id,
+        addedWordLists: nextAddedWordLists,
+      });
+    }
+    case 'RENAME_ADDED_LIST': {
+      const { id, name } = action.payload;
+      const nextAddedWordLists = state.addedWordLists.map((list) =>
+        list.id === id ? { ...list, name } : list
+      );
+      if (state.selectedAddedListId === id) {
+        return {
+          ...state,
+          addedWordLists: nextAddedWordLists,
+          wordListName: name,
+        };
+      }
+      return {
+        ...state,
+        addedWordLists: nextAddedWordLists,
+      };
+    }
+    case 'REMOVE_ADDED_LIST': {
+      const removedId = action.payload;
+      const nextAddedWordLists = state.addedWordLists.filter(
+        (list) => list.id !== removedId
+      );
+
+      if (state.selectedAddedListId === removedId) {
+        return buildListSelectionState(state, {
+          selectedPreset: 'default',
+          selectedAddedListId: null,
+          addedWordLists: nextAddedWordLists,
+        });
+      }
+
+      return {
+        ...state,
+        addedWordLists: nextAddedWordLists,
+      };
+    }
     case 'START_GAME':
       return buildRoundResetState(state, {
         timeLeft: state.startTime,
@@ -202,9 +330,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
   );
 
   const pickNewWord = useCallback(() => {
-    const availableWords = words.filter(
-      (word) => !state.usedWords.includes(word)
-    );
+    const availableWords = words.filter((word) => !state.usedWords.includes(word));
 
     if (availableWords.length === 0) {
       dispatch({ type: 'NO_MORE_WORDS' });
@@ -291,6 +417,33 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
     }
   }, [state.isPlaying, state.usedWords.length, state.currentWord, pickNewWord]);
 
+  useEffect(() => {
+    savePersistedConfig({
+      version: 2,
+      settings: {
+        startTime: state.startTime,
+        bonusTime: state.bonusTime,
+        alternativeWordBonusTime: state.alternativeWordBonusTime,
+        minWordLength: state.minWordLength,
+        maxWordLength: state.maxWordLength,
+      },
+      list: {
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: state.selectedAddedListId,
+        added: state.addedWordLists,
+      },
+    });
+  }, [
+    state.startTime,
+    state.bonusTime,
+    state.alternativeWordBonusTime,
+    state.minWordLength,
+    state.maxWordLength,
+    state.selectedPreset,
+    state.selectedAddedListId,
+    state.addedWordLists,
+  ]);
+
   const resetBonusRef = useCallback(() => {
     bonusAwardedWordsRef.current = new Set();
     currentWordScoredRef.current = false;
@@ -309,39 +462,92 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
 
   const changePreset = useCallback(
     (presetKey) => {
-      const selected = WORD_LISTS[presetKey];
-      if (!selected) {
+      if (!WORD_LISTS[presetKey]) {
         return;
       }
 
       resetBonusRef();
-      dispatch({
-        type: 'CHANGE_WORD_LIST',
-        payload: {
-          words: selected.words,
-          bonusCheckWords: selected.bonusCheckWords,
-          name: selected.name,
-          selectedPreset: presetKey,
-        },
-      });
+      dispatch({ type: 'CHANGE_PRESET', payload: presetKey });
     },
     [resetBonusRef]
   );
 
-  const changeCustomWordList = useCallback(
+  const addAddedWordList = useCallback(
     (wordList, name) => {
+      if (!Array.isArray(wordList) || wordList.length === 0) {
+        return;
+      }
+
+      const resolveName = createListNameResolver(
+        state.addedWordLists.map((list) => list.name)
+      );
+      const nextName = resolveName(name);
+
       resetBonusRef();
       dispatch({
-        type: 'CHANGE_WORD_LIST',
+        type: 'ADD_ADDED_LIST',
         payload: {
+          id: generateAddedListId(),
+          name: nextName,
           words: wordList,
-          bonusCheckWords: wordList,
-          name,
-          selectedPreset: 'custom',
         },
       });
     },
-    [resetBonusRef]
+    [resetBonusRef, state.addedWordLists]
+  );
+
+  const selectAddedWordList = useCallback(
+    (id) => {
+      if (typeof id !== 'string' || id.length === 0) {
+        return;
+      }
+      if (!state.addedWordLists.some((list) => list.id === id)) {
+        return;
+      }
+
+      resetBonusRef();
+      dispatch({ type: 'SELECT_ADDED_LIST', payload: id });
+    },
+    [resetBonusRef, state.addedWordLists]
+  );
+
+  const renameAddedWordList = useCallback(
+    (id, rawName) => {
+      const target = state.addedWordLists.find((list) => list.id === id);
+      if (!target) {
+        return;
+      }
+
+      const trimmedName = typeof rawName === 'string' ? rawName.trim() : '';
+      if (trimmedName.length === 0) {
+        return;
+      }
+
+      const resolveName = createListNameResolver(
+        state.addedWordLists
+          .filter((list) => list.id !== id)
+          .map((list) => list.name)
+      );
+      const nextName = resolveName(trimmedName);
+
+      dispatch({
+        type: 'RENAME_ADDED_LIST',
+        payload: { id, name: nextName },
+      });
+    },
+    [state.addedWordLists]
+  );
+
+  const removeAddedWordList = useCallback(
+    (id) => {
+      if (!state.addedWordLists.some((list) => list.id === id)) {
+        return;
+      }
+
+      resetBonusRef();
+      dispatch({ type: 'REMOVE_ADDED_LIST', payload: id });
+    },
+    [resetBonusRef, state.addedWordLists]
   );
 
   const setStartTime = useCallback(
@@ -385,7 +591,10 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       giveUp,
       toggleSettings,
       changePreset,
-      changeCustomWordList,
+      addAddedWordList,
+      selectAddedWordList,
+      renameAddedWordList,
+      removeAddedWordList,
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,
@@ -399,7 +608,10 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       giveUp,
       toggleSettings,
       changePreset,
-      changeCustomWordList,
+      addAddedWordList,
+      selectAddedWordList,
+      renameAddedWordList,
+      removeAddedWordList,
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,

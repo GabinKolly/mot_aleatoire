@@ -18,6 +18,7 @@ export default function App() {
     toggleSettings,
     addAddedWordList,
     setTiles,
+    reshuffleCurrentWord,
     checkWord,
   } = actions;
   const [screenWidth, setScreenWidth] = useState(
@@ -74,7 +75,7 @@ export default function App() {
               onClick={toggleSettings}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <SettingsIcon className="w-6 h-6 text-gray-600" />
+              <SettingsIcon className="w-6 h-6 text-white" />
             </button>
           </div>
 
@@ -122,6 +123,7 @@ export default function App() {
               onTouchStart={dragAndDrop.handleTouchStart}
               onTouchMove={dragAndDrop.handleTouchMove}
               onTouchEnd={dragAndDrop.handleTouchEnd}
+              onReshuffle={reshuffleCurrentWord}
               onGiveUp={giveUp}
             />
           )}

@@ -56,6 +56,18 @@ const shuffleWord = (word) => {
   return shuffled;
 };
 
+const buildShuffledTiles = (word) => {
+  let shuffled = shuffleWord(word);
+  let attempts = 1;
+
+  while (shuffled.join('') === word && attempts < 200) {
+    shuffled = shuffleWord(word);
+    attempts += 1;
+  }
+
+  return shuffled.map((letter, index) => ({ letter, id: index }));
+};
+
 const createListNameResolver = (existingNames) => {
   const used = new Set(existingNames);
 
@@ -363,8 +375,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
 
     bonusAwardedWordsRef.current = new Set();
     currentWordScoredRef.current = false;
-    const shuffled = shuffleWord(word);
-    const nextTiles = shuffled.map((letter, index) => ({ letter, id: index }));
+    const nextTiles = buildShuffledTiles(word);
 
     dispatch({ type: 'SET_NEXT_WORD', payload: { word, tiles: nextTiles } });
   }, [state.usedWords, words]);
@@ -589,6 +600,17 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
     []
   );
 
+  const reshuffleCurrentWord = useCallback(() => {
+    if (!state.isPlaying || state.isCorrect || state.currentWord.length < 2) {
+      return;
+    }
+
+    dispatch({
+      type: 'SET_TILES',
+      payload: buildShuffledTiles(state.currentWord),
+    });
+  }, [state.currentWord, state.isCorrect, state.isPlaying]);
+
   const actions = useMemo(
     () => ({
       startGame,
@@ -605,6 +627,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       setMinWordLength,
       setMaxWordLength,
       setTiles,
+      reshuffleCurrentWord,
       checkWord,
     }),
     [
@@ -622,6 +645,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       setMinWordLength,
       setMaxWordLength,
       setTiles,
+      reshuffleCurrentWord,
       checkWord,
     ]
   );

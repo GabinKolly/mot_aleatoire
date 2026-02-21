@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Shuffle } from 'lucide-react';
 import BlackButton from './BlackButton';
 import Tile from './Tile';
 import { getTileVisualClasses } from './tileVisualState';
@@ -26,6 +26,7 @@ export default function GameScreen({
   onTouchStart,
   onTouchMove,
   onTouchEnd,
+  onReshuffle,
   onGiveUp,
 }) {
   const { size: tileSize, fontSize } = calculateTileSize(screenWidth, tiles.length || 1);
@@ -80,7 +81,15 @@ export default function GameScreen({
           )}
       </div>
 
-      <div className="text-center">
+      <div className="text-center flex items-center justify-center gap-3">
+        <BlackButton
+          onClick={onReshuffle}
+          disabled={interactionsDisabled}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Shuffle className="w-4 h-4" />
+          Mélanger
+        </BlackButton>
         <BlackButton
           onClick={onGiveUp}
           className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"

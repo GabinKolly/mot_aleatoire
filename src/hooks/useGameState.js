@@ -285,10 +285,14 @@ function reducer(state, action) {
     case 'NO_MORE_WORDS':
       return { ...state, isPlaying: false, allWordsCompleted: true };
     case 'CORRECT_WORD':
+      // Force solved visual order during the success animation.
       return {
         ...state,
         isCorrect: true,
         isBonusWord: false,
+        tiles: state.currentWord
+          .split('')
+          .map((letter, index) => ({ letter, id: index })),
         wordsFound: state.wordsFound + 1,
         score: state.score + state.currentWord.length,
         timeLeft: state.timeLeft + state.bonusTime,

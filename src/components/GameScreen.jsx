@@ -29,6 +29,7 @@ export default function GameScreen({
   onGiveUp,
 }) {
   const { size: tileSize, fontSize } = calculateTileSize(screenWidth, tiles.length || 1);
+  const interactionsDisabled = isCorrect;
 
   return (
     <div className="space-y-6">
@@ -43,6 +44,7 @@ export default function GameScreen({
               fontSize={fontSize}
               isCorrect={isCorrect}
               isBonusWord={isBonusWord}
+              interactionsDisabled={interactionsDisabled}
               draggedIndex={draggedIndex}
               touchDragPosition={touchDragPosition}
               onDragStart={onDragStart}

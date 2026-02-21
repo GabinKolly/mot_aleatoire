@@ -7,6 +7,7 @@ export default function Tile({
   fontSize,
   isCorrect,
   isBonusWord,
+  interactionsDisabled,
   draggedIndex,
   touchDragPosition,
   onDragStart,
@@ -19,7 +20,7 @@ export default function Tile({
   return (
     <div
       data-tile-index={index}
-      draggable
+      draggable={!interactionsDisabled}
       onDragStart={() => onDragStart(index)}
       onDragOver={(event) => onDragOver(event, index)}
       onDragEnd={onDragEnd}
@@ -27,7 +28,11 @@ export default function Tile({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       onTouchCancel={onTouchEnd}
-      className={`border-2 rounded-lg flex items-center justify-center font-bold cursor-move select-none shadow-md hover:shadow-lg transition-all flex-shrink-0 ${getTileVisualClasses(
+      className={`border-2 rounded-lg flex items-center justify-center font-bold ${
+        interactionsDisabled ? 'cursor-default' : 'cursor-move'
+      } select-none shadow-md transition-all flex-shrink-0 ${
+        interactionsDisabled ? '' : 'hover:shadow-lg'
+      } ${getTileVisualClasses(
         { isCorrect, isBonusWord }
       )} ${
         draggedIndex === index && touchDragPosition

@@ -34,6 +34,7 @@ export default function App() {
   const dragAndDrop = useDragAndDrop({
     setTiles,
     onDropComplete: checkWord,
+    isInteractionLocked: state.isCorrect,
   });
 
   const handleFileUpload = (event) => {

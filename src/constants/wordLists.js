@@ -7,6 +7,7 @@ import paysWordsText from '../word-lists/pays.txt?raw';
 import motsAvecWWordsText from '../word-lists/mots_avec_w.txt?raw';
 import dicoHard from '../word-lists/dico_difficile.txt?raw';
 import ODS from '../word-lists/dico.txt?raw';
+import dicoAvecAccents from '../word-lists/dico_avec_accents.txt?raw';
 
 export const parseWordsText = (text) =>
   text
@@ -15,6 +16,7 @@ export const parseWordsText = (text) =>
     .filter((word) => word.length > 1);
 
 const odsWords = parseWordsText(ODS);
+const wordsWithAccents = parseWordsText(dicoAvecAccents);
 const easyWords = parseWordsText(dicoEasy);
 const mediumWords = parseWordsText(dicoMedium);
 const hardWords = parseWordsText(dicoHard);
@@ -28,12 +30,12 @@ export const WORD_LISTS = {
   default: {
     name: 'Dictionnaire facile',
     words: easyWords,
-    bonusCheckWords: odsWords,
+    bonusCheckWords: wordsWithAccents,
   },
   medium: {
     name: 'Dictionnaire moyen',
     words: mediumWords,
-    bonusCheckWords: odsWords,
+    bonusCheckWords: wordsWithAccents,
   },
   ODS9: {
     name: 'Dictionnaire difficile (sans accents)',

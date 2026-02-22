@@ -19,6 +19,8 @@ export default class GameRoom {
     this.gameTimeLeft = 0;
     this.wordTimeLeft = 0;
     this.timerInterval = null;
+    this.transitioning = false;
+    this.transitionTimeout = null;
   }
 
   broadcast(message) {
@@ -66,6 +68,11 @@ export default class GameRoom {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
+    if (this.transitionTimeout) {
+      clearTimeout(this.transitionTimeout);
+      this.transitionTimeout = null;
+    }
+    this.transitioning = false;
   }
 
   tick() {
@@ -75,15 +82,34 @@ export default class GameRoom {
     }
 
     this.gameTimeLeft -= 1;
-    this.wordTimeLeft -= 1;
+
+    if (!this.transitioning) {
+      this.wordTimeLeft -= 1;
+    }
 
     if (this.gameTimeLeft <= 0) {
       this.endGame();
       return;
     }
 
-    if (this.wordTimeLeft <= 0) {
-      this.advanceWord(null);
+    if (this.wordTimeLeft <= 0 && !this.transitioning) {
+      this.transitioning = true;
+      this.broadcast({
+        type: 'WORD_SKIPPED',
+        wordIndex: this.currentWordIndex,
+      });
+      this.transitionTimeout = setTimeout(() => {
+        this.transitioning = false;
+        this.transitionTimeout = null;
+        if (this.status === 'playing') {
+          this.advanceWord(null);
+          this.broadcast({
+            type: 'TIMER_SYNC',
+            gameTimeLeft: this.gameTimeLeft,
+            wordTimeLeft: this.wordTimeLeft,
+          });
+        }
+      }, 1500);
     }
 
     this.broadcast({
@@ -241,6 +267,7 @@ export default class GameRoom {
 
       case 'WORD_FOUND': {
         if (this.status !== 'playing') break;
+        if (this.transitioning) break;
 
         const wordIndex = data.wordIndex;
         if (typeof wordIndex !== 'number' || wordIndex !== this.currentWordIndex) break;
@@ -249,6 +276,7 @@ export default class GameRoom {
         this.claimedWords.add(wordIndex);
         player.score += data.wordLength || 0;
         player.wordsFound += 1;
+        this.transitioning = true;
 
         this.broadcast({
           type: 'WORD_CLAIMED',
@@ -262,7 +290,18 @@ export default class GameRoom {
           ),
         });
 
-        this.advanceWord(player.number);
+        this.transitionTimeout = setTimeout(() => {
+          this.transitioning = false;
+          this.transitionTimeout = null;
+          if (this.status === 'playing') {
+            this.advanceWord(player.number);
+            this.broadcast({
+              type: 'TIMER_SYNC',
+              gameTimeLeft: this.gameTimeLeft,
+              wordTimeLeft: this.wordTimeLeft,
+            });
+          }
+        }, 1500);
         break;
       }
 

@@ -7,6 +7,7 @@ export default function Tile({
   fontSize,
   isCorrect,
   isBonusWord,
+  isWordSkipped,
   interactionsDisabled,
   draggedIndex,
   touchDragPosition,
@@ -33,7 +34,7 @@ export default function Tile({
       } select-none shadow-md transition-all flex-shrink-0 ${
         interactionsDisabled ? '' : 'hover:shadow-lg'
       } ${getTileVisualClasses(
-        { isCorrect, isBonusWord }
+        { isCorrect, isBonusWord, isWordSkipped }
       )} ${
         draggedIndex === index && touchDragPosition
           ? 'opacity-0'

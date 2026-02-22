@@ -145,8 +145,21 @@ function reducer(state, action) {
       };
     }
 
+    case 'WORD_SKIPPED': {
+      const current = state.wordSequence[action.payload.wordIndex];
+      if (!current) return state;
+      return {
+        ...state,
+        isCorrect: true,
+        wordSkipped: true,
+        tiles: current.word
+          .split('')
+          .map((letter, index) => ({ letter, id: index })),
+      };
+    }
+
     case 'NEXT_WORD': {
-      const { wordIndex, gameTimeLeft, wordTimeLeft, skipped } = action.payload;
+      const { wordIndex, gameTimeLeft, wordTimeLeft } = action.payload;
       const next = state.wordSequence[wordIndex];
       if (!next) {
         return {
@@ -169,7 +182,7 @@ function reducer(state, action) {
         tiles: next.tiles,
         gameTimeLeft,
         wordTimeLeft,
-        lastClaimedBy: skipped ? null : state.lastClaimedBy,
+        lastClaimedBy: null,
         wordSkipped: false,
       };
     }
@@ -180,6 +193,19 @@ function reducer(state, action) {
         gameTimeLeft: action.payload.gameTimeLeft,
         wordTimeLeft: action.payload.wordTimeLeft,
       };
+
+    case 'REVEAL_FINAL_WORD': {
+      const current = state.wordSequence[state.currentWordIndex];
+      if (!current || state.isCorrect) return state;
+      return {
+        ...state,
+        isCorrect: true,
+        wordSkipped: true,
+        tiles: current.word
+          .split('')
+          .map((letter, index) => ({ letter, id: index })),
+      };
+    }
 
     case 'GAME_OVER':
       return {
@@ -274,6 +300,10 @@ export function useMultiplayerGame() {
             dispatch({ type: 'WORD_CLAIMED', payload: data });
             break;
 
+          case 'WORD_SKIPPED':
+            dispatch({ type: 'WORD_SKIPPED', payload: data });
+            break;
+
           case 'NEXT_WORD':
             dispatch({ type: 'NEXT_WORD', payload: data });
             break;
@@ -283,7 +313,10 @@ export function useMultiplayerGame() {
             break;
 
           case 'GAME_OVER':
-            dispatch({ type: 'GAME_OVER', payload: data });
+            dispatch({ type: 'REVEAL_FINAL_WORD' });
+            setTimeout(() => {
+              dispatch({ type: 'GAME_OVER', payload: data });
+            }, 1500);
             break;
 
           case 'PLAYER_DISCONNECTED':

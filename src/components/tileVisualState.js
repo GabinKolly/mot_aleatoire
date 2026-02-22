@@ -1,4 +1,8 @@
-export function getTileVisualClasses({ isCorrect, isBonusWord }) {
+export function getTileVisualClasses({ isCorrect, isBonusWord, isWordSkipped }) {
+  if (isCorrect && isWordSkipped) {
+    return 'bg-red-400 border-red-500 text-white scale-110';
+  }
+
   if (isCorrect) {
     return 'bg-green-400 border-green-500 text-white scale-110';
   }

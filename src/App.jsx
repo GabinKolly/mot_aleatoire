@@ -187,6 +187,7 @@ function MultiplayerGame({ onBack }) {
             tiles={state.tiles}
             isCorrect={state.isCorrect}
             isBonusWord={false}
+            isWordSkipped={state.wordSkipped}
             draggedIndex={dragAndDrop.draggedIndex}
             touchDragPosition={dragAndDrop.touchDragPosition}
             screenWidth={screenWidth}

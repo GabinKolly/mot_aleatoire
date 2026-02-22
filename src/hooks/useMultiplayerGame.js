@@ -7,7 +7,9 @@ import { generateWordSequence, buildShuffledTiles } from '../utils/wordPicking';
 const PARTYKIT_HOST =
   typeof import.meta !== 'undefined' && import.meta.env?.VITE_PARTYKIT_HOST
     ? import.meta.env.VITE_PARTYKIT_HOST
-    : 'localhost:1999';
+    : `${
+        typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      }:1999`;
 
 const DEFAULT_CONFIG = {
   gameTime: 180,

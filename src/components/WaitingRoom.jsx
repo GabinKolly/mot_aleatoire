@@ -145,11 +145,13 @@ export default function WaitingRoom({ state, actions }) {
                 <button
                   key={key}
                   onClick={() => setSelectedPreset(key)}
-                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                    selectedPreset === key
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                  style={{
+                    backgroundColor: selectedPreset === key ? '#059669' : '#6b7280',
+                    borderColor: selectedPreset === key ? '#059669' : '#6b7280',
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                  }}
                 >
                   {list.name}
                 </button>

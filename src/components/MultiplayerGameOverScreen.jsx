@@ -5,6 +5,8 @@ export default function MultiplayerGameOverScreen({
   scores,
   wordsFound,
   winner,
+  gameOverReason,
+  forfeitedBy,
   playerNumber,
   players,
   onPlayAgain,
@@ -12,6 +14,8 @@ export default function MultiplayerGameOverScreen({
 }) {
   const isWinner = winner === playerNumber;
   const isTie = winner === null;
+  const endedByForfeit = gameOverReason === 'forfeit';
+  const selfForfeited = endedByForfeit && forfeitedBy === playerNumber;
 
   const self = players.find((p) => p.number === playerNumber);
   const opponent = players.find((p) => p.number !== playerNumber);
@@ -24,7 +28,18 @@ export default function MultiplayerGameOverScreen({
   return (
     <div className="text-center py-8">
       <div className="mb-6">
-        {isTie ? (
+        {endedByForfeit ? (
+          selfForfeited ? (
+            <p className="text-2xl font-bold text-red-700">Vous avez abandonné.</p>
+          ) : (
+            <div className="space-y-2">
+              <Trophy className="w-12 h-12 text-yellow-500 mx-auto" />
+              <p className="text-2xl font-bold text-emerald-700">
+                Votre adversaire a abandonné.
+              </p>
+            </div>
+          )
+        ) : isTie ? (
           <p className="text-2xl font-bold text-yellow-700">Égalité !</p>
         ) : isWinner ? (
           <div className="space-y-2">

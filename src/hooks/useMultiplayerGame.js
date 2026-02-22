@@ -40,6 +40,8 @@ const initialState = {
   wordsFound: { 1: 0, 2: 0 },
   gameOver: false,
   winner: null,
+  gameOverReason: null,
+  forfeitedBy: null,
   lastClaimedBy: null,
   wordSkipped: false,
 };
@@ -112,6 +114,8 @@ function reducer(state, action) {
         wordsFound: { 1: 0, 2: 0 },
         gameOver: false,
         winner: null,
+        gameOverReason: null,
+        forfeitedBy: null,
         lastClaimedBy: null,
         wordSkipped: false,
       };
@@ -129,6 +133,8 @@ function reducer(state, action) {
       return {
         ...state,
         isCorrect: true,
+        lastClaimedBy: state.playerNumber,
+        wordSkipped: false,
         tiles: state.currentWord
           .split('')
           .map((letter, index) => ({ letter, id: index })),
@@ -224,6 +230,8 @@ function reducer(state, action) {
         isPlaying: false,
         gameOver: true,
         winner: action.payload.winner,
+        gameOverReason: action.payload.endReason ?? 'score',
+        forfeitedBy: action.payload.forfeitedBy ?? null,
         scores: Object.fromEntries(
           Object.entries(action.payload.scores).map(([num, data]) => [num, data.score])
         ),

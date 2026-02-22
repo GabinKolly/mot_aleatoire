@@ -40,7 +40,7 @@ export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
         <div className="space-y-3">
           <div>
             <BlackButton
-              onClick={() => setMode('create')}
+              onClick={handleCreate}
               className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white text-lg font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Créer une partie
@@ -54,17 +54,6 @@ export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
               Rejoindre une partie
             </BlackButton>
           </div>
-        </div>
-      )}
-
-      {mode === 'create' && (
-        <div className="space-y-3">
-          <BlackButton
-            onClick={handleCreate}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white text-lg font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
-          >
-            Créer la salle
-          </BlackButton>
         </div>
       )}
 

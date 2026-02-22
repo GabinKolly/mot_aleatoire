@@ -216,6 +216,8 @@ function MultiplayerGame({ onBack }) {
           scores={state.scores}
           wordsFound={state.wordsFound}
           winner={state.winner}
+          gameOverReason={state.gameOverReason}
+          forfeitedBy={state.forfeitedBy}
           playerNumber={state.playerNumber}
           players={state.players}
           onPlayAgain={actions.playAgain}

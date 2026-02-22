@@ -132,20 +132,22 @@ export default class GameRoom {
     });
   }
 
-  endGame() {
+  endGame({ winnerOverride = null, endReason = 'score', forfeitedBy = null } = {}) {
     this.status = 'gameOver';
     this.stopTimer();
 
     const players = this.getPlayerList();
-    let winner = null;
-    if (players.length === 2) {
-      if (players[0].score > players[1].score) {
+    let winner = winnerOverride;
+    if (winner === null) {
+      if (players.length === 2) {
+        if (players[0].score > players[1].score) {
+          winner = players[0].number;
+        } else if (players[1].score > players[0].score) {
+          winner = players[1].number;
+        }
+      } else if (players.length === 1) {
         winner = players[0].number;
-      } else if (players[1].score > players[0].score) {
-        winner = players[1].number;
       }
-    } else if (players.length === 1) {
-      winner = players[0].number;
     }
 
     this.broadcast({
@@ -154,6 +156,8 @@ export default class GameRoom {
         players.map((p) => [p.number, { score: p.score, wordsFound: p.wordsFound, name: p.name }])
       ),
       winner,
+      endReason,
+      forfeitedBy,
     });
   }
 
@@ -190,7 +194,12 @@ export default class GameRoom {
     this.players.delete(connection.id);
 
     if (this.status === 'playing' && player) {
-      this.endGame();
+      const remainingPlayer = Array.from(this.players.values())[0];
+      this.endGame({
+        winnerOverride: remainingPlayer?.number ?? null,
+        endReason: 'forfeit',
+        forfeitedBy: player.number,
+      });
       return;
     }
 
@@ -307,7 +316,12 @@ export default class GameRoom {
 
       case 'FORFEIT':
         if (this.status !== 'playing') break;
-        this.endGame();
+        this.endGame({
+          winnerOverride:
+            Array.from(this.players.values()).find((p) => p.number !== player.number)?.number ?? null,
+          endReason: 'forfeit',
+          forfeitedBy: player.number,
+        });
         break;
 
       case 'PLAY_AGAIN':

@@ -218,7 +218,7 @@ function MultiplayerGame({ onBack }) {
           winner={state.winner}
           playerNumber={state.playerNumber}
           players={state.players}
-          onPlayAgain={actions.goBackToLobby}
+          onPlayAgain={actions.playAgain}
           onBackToMenu={handleBackToMenu}
         />
       )}

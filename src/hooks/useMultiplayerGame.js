@@ -56,7 +56,13 @@ function reducer(state, action) {
         roomCode: action.payload.roomId,
       };
 
-    case 'ROOM_STATE':
+    case 'ROOM_STATE': {
+      let nextPhase = state.phase;
+      if (action.payload.status === 'waiting') {
+        if (state.phase === 'lobby' || state.phase === 'gameOver') {
+          nextPhase = 'waiting';
+        }
+      }
       return {
         ...state,
         players: action.payload.players,
@@ -64,10 +70,14 @@ function reducer(state, action) {
         isHost: action.payload.hostId === action.payload.myConnectionId,
         config: action.payload.config,
         wordListKey: action.payload.wordListKey,
-        phase: action.payload.status === 'waiting'
-          ? (state.phase === 'lobby' ? 'waiting' : state.phase)
-          : state.phase,
+        phase: nextPhase,
+        isPlaying: false,
+        gameOver: nextPhase === 'waiting' ? false : state.gameOver,
+        isCorrect: nextPhase === 'waiting' ? false : state.isCorrect,
+        tiles: nextPhase === 'waiting' ? [] : state.tiles,
+        wordSkipped: false,
       };
+    }
 
     case 'ENTER_WAITING':
       return { ...state, phase: 'waiting' };
@@ -421,6 +431,10 @@ export function useMultiplayerGame() {
     dispatch({ type: 'RESET' });
   }, [cleanup]);
 
+  const playAgain = useCallback(() => {
+    send({ type: 'PLAY_AGAIN' });
+  }, [send]);
+
   const actions = useMemo(
     () => ({
       createRoom,
@@ -432,8 +446,9 @@ export function useMultiplayerGame() {
       reshuffleCurrentWord,
       forfeit,
       goBackToLobby,
+      playAgain,
     }),
-    [createRoom, joinRoom, updateConfig, startGame, setTiles, checkWord, reshuffleCurrentWord, forfeit, goBackToLobby]
+    [createRoom, joinRoom, updateConfig, startGame, setTiles, checkWord, reshuffleCurrentWord, forfeit, goBackToLobby, playAgain]
   );
 
   return { state, actions };

@@ -309,6 +309,20 @@ export default class GameRoom {
         if (this.status !== 'playing') break;
         this.endGame();
         break;
+
+      case 'PLAY_AGAIN':
+        if (this.status !== 'gameOver') break;
+        this.status = 'waiting';
+        this.currentWordIndex = 0;
+        this.claimedWords = new Set();
+        this.gameTimeLeft = 0;
+        this.wordTimeLeft = 0;
+        for (const p of this.players.values()) {
+          p.score = 0;
+          p.wordsFound = 0;
+        }
+        this.broadcastRoomState();
+        break;
     }
   }
 }

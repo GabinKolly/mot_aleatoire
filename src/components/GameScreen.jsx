@@ -17,7 +17,7 @@ export default function GameScreen({
   tiles,
   isCorrect,
   isBonusWord,
-  isWordSkipped,
+  revealType,
   draggedIndex,
   touchDragPosition,
   screenWidth,
@@ -46,7 +46,7 @@ export default function GameScreen({
               fontSize={fontSize}
               isCorrect={isCorrect}
               isBonusWord={isBonusWord}
-              isWordSkipped={isWordSkipped}
+              revealType={revealType}
               interactionsDisabled={interactionsDisabled}
               draggedIndex={draggedIndex}
               touchDragPosition={touchDragPosition}
@@ -67,7 +67,7 @@ export default function GameScreen({
           createPortal(
             <div
               className={`fixed border-2 rounded-lg flex items-center justify-center font-bold select-none shadow-xl z-50 pointer-events-none ${getTileVisualClasses(
-                { isCorrect, isBonusWord, isWordSkipped }
+                { isCorrect, isBonusWord, revealType }
               )}`}
               style={{
                 width: `${tileSize}px`,

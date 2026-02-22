@@ -1,6 +1,10 @@
-export function getTileVisualClasses({ isCorrect, isBonusWord, isWordSkipped }) {
-  if (isCorrect && isWordSkipped) {
+export function getTileVisualClasses({ isCorrect, isBonusWord, revealType }) {
+  if (isCorrect && revealType === 'opponent') {
     return 'bg-red-400 border-red-500 text-white scale-110';
+  }
+
+  if (isCorrect && revealType === 'timeout') {
+    return 'bg-orange-400 border-orange-500 text-white scale-110';
   }
 
   if (isCorrect) {

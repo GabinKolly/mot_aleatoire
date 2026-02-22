@@ -187,7 +187,15 @@ function MultiplayerGame({ onBack }) {
             tiles={state.tiles}
             isCorrect={state.isCorrect}
             isBonusWord={false}
-            isWordSkipped={state.wordSkipped}
+            revealType={
+              state.isCorrect
+                ? state.wordSkipped
+                  ? 'timeout'
+                  : state.lastClaimedBy === state.playerNumber
+                    ? 'self'
+                    : 'opponent'
+                : null
+            }
             draggedIndex={dragAndDrop.draggedIndex}
             touchDragPosition={dragAndDrop.touchDragPosition}
             screenWidth={screenWidth}

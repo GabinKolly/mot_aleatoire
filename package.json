@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:partykit": "npx partykit dev",
+    "deploy:partykit": "npx partykit deploy",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

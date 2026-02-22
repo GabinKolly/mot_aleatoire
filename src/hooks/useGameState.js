@@ -1,72 +1,7 @@
 import { useEffect, useMemo, useRef, useReducer, useCallback } from 'react';
 import { WORD_LISTS } from '../constants/wordLists';
 import { loadPersistedConfig, savePersistedConfig } from '../constants/persistence';
-
-const canBeSolvedWithOneMove = (shuffled, original) => {
-  const shuffledArray = shuffled.split('');
-
-  for (let i = 0; i < shuffledArray.length; i += 1) {
-    const letter = shuffledArray[i];
-    const withoutLetter = [
-      ...shuffledArray.slice(0, i),
-      ...shuffledArray.slice(i + 1),
-    ];
-
-    for (let j = 0; j <= withoutLetter.length; j += 1) {
-      const newArrangement = [
-        ...withoutLetter.slice(0, j),
-        letter,
-        ...withoutLetter.slice(j),
-      ];
-      if (newArrangement.join('') === original) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-};
-
-const shuffleWord = (word) => {
-  const letters = word.split('');
-  let shuffled = [...letters];
-  let attempts = 0;
-
-  do {
-    shuffled = [...letters];
-    for (let i = shuffled.length - 1; i > 0; i -= 1) {
-      const randomIndex = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
-    }
-
-    attempts += 1;
-    const shuffledWord = shuffled.join('');
-
-    if (shuffledWord === word) {
-      continue;
-    }
-
-    if (word.length >= 5 && canBeSolvedWithOneMove(shuffledWord, word)) {
-      continue;
-    }
-
-    break;
-  } while (attempts < 100);
-
-  return shuffled;
-};
-
-const buildShuffledTiles = (word) => {
-  let shuffled = shuffleWord(word);
-  let attempts = 1;
-
-  while (shuffled.join('') === word && attempts < 200) {
-    shuffled = shuffleWord(word);
-    attempts += 1;
-  }
-
-  return shuffled.map((letter, index) => ({ letter, id: index }));
-};
+import { buildShuffledTiles, pickWordFromList } from '../utils/wordPicking';
 
 const createListNameResolver = (existingNames) => {
   const used = new Set(existingNames);
@@ -353,25 +288,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       return;
     }
 
-    let word;
-    if (words.length >= 500) {
-      const wordsByLength = availableWords.reduce((accumulator, candidate) => {
-        const length = candidate.length;
-        if (!accumulator[length]) {
-          accumulator[length] = [];
-        }
-        accumulator[length].push(candidate);
-        return accumulator;
-      }, {});
-
-      const availableLengths = Object.keys(wordsByLength).map(Number);
-      const chosenLength =
-        availableLengths[Math.floor(Math.random() * availableLengths.length)];
-      const bucket = wordsByLength[chosenLength];
-      word = bucket[Math.floor(Math.random() * bucket.length)];
-    } else {
-      word = availableWords[Math.floor(Math.random() * availableWords.length)];
-    }
+    const word = pickWordFromList(availableWords, words);
 
     bonusAwardedWordsRef.current = new Set();
     currentWordScoredRef.current = false;

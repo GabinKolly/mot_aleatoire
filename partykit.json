@@ -1,0 +1,4 @@
+{
+  "name": "mot-aleatoire",
+  "main": "party/server.js"
+}

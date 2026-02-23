@@ -60,3 +60,22 @@ button:focus-visible {
 button {
   background-color: #f9f9f9;
 }
+
+@keyframes pop-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+.animate-pop-up {
+  animation: pop-up-fade 0.9s ease-out forwards;
+}

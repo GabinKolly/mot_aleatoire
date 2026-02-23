@@ -234,7 +234,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       <div className="w-full">
-        <div className="bg-white rounded-b-xl shadow-xl p-6 mb-6">
+        <div className="bg-white rounded-b-xl shadow-xl p-6 mb-6 max-md:min-h-[100dvh] max-md:mb-0 max-md:rounded-none max-md:flex max-md:flex-col">
           {mode === null && (
             <>
               <div className="flex justify-between items-center mb-4">

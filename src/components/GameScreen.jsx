@@ -34,7 +34,21 @@ export default function GameScreen({
   const interactionsDisabled = isCorrect;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-md:flex max-md:flex-col max-md:flex-grow">
+      {/* Abandonner — mobile only, placed right below stats */}
+      <div className="text-center md:hidden">
+        <BlackButton
+          onClick={onGiveUp}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Abandonner
+        </BlackButton>
+      </div>
+
+      {/* Spacer — pushes tiles to bottom on mobile */}
+      <div className="flex-grow md:hidden" />
+
       <div className="relative left-1/2 w-screen -translate-x-1/2 bg-amber-50 py-4 text-center">
         <div className="flex justify-center gap-1 overflow-x-auto pb-2">
           {tiles.map((tile, index) => (
@@ -92,9 +106,10 @@ export default function GameScreen({
           <Shuffle className="w-4 h-4" />
           Mélanger
         </BlackButton>
+        {/* Abandonner — desktop only */}
         <BlackButton
           onClick={onGiveUp}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+          className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
           Abandonner

@@ -48,7 +48,8 @@ export default function WaitingRoom({ state, actions }) {
     }
   };
 
-  const canStart = players.length === 2 && isHost;
+  const allConnected = players.every((p) => p.connected !== false);
+  const canStart = players.length === 2 && isHost && allConnected;
 
   return (
     <div className="py-6 space-y-6">
@@ -77,17 +78,28 @@ export default function WaitingRoom({ state, actions }) {
           {players.map((player) => (
             <div
               key={player.id}
-              className="flex items-center gap-2 bg-white rounded-lg px-3 py-2"
+              className={`flex items-center gap-2 bg-white rounded-lg px-3 py-2 ${
+                player.connected === false ? 'opacity-50' : ''
+              }`}
             >
               <div
                 className={`w-3 h-3 rounded-full ${
-                  player.number === 1 ? 'bg-blue-500' : 'bg-red-500'
+                  player.connected === false
+                    ? 'bg-gray-400'
+                    : player.number === 1
+                      ? 'bg-blue-500'
+                      : 'bg-red-500'
                 }`}
               />
               <span className="font-medium">{player.name}</span>
               {player.id === state.hostId && (
                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
                   Hôte
+                </span>
+              )}
+              {player.connected === false && (
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                  Déconnecté
                 </span>
               )}
             </div>

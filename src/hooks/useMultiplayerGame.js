@@ -11,6 +11,38 @@ const PARTYKIT_HOST =
         typeof window !== 'undefined' ? window.location.hostname : 'localhost'
       }:1999`;
 
+const STORAGE_KEY_PLAYER_NAME = 'mot-melange-player-name';
+const STORAGE_KEY_PLAYER_ID = 'mot-melange-player-id';
+
+function getOrCreatePlayerId() {
+  try {
+    let id = localStorage.getItem(STORAGE_KEY_PLAYER_ID);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(STORAGE_KEY_PLAYER_ID, id);
+    }
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+export function getSavedPlayerName() {
+  try {
+    return localStorage.getItem(STORAGE_KEY_PLAYER_NAME) || '';
+  } catch {
+    return '';
+  }
+}
+
+function savePlayerName(name) {
+  try {
+    localStorage.setItem(STORAGE_KEY_PLAYER_NAME, name);
+  } catch {
+    // localStorage might be unavailable
+  }
+}
+
 const DEFAULT_CONFIG = {
   gameTime: 180,
   wordTime: 30,
@@ -71,7 +103,7 @@ function reducer(state, action) {
         ...state,
         players: action.payload.players,
         hostId: action.payload.hostId,
-        isHost: action.payload.hostId === action.payload.myConnectionId,
+        isHost: action.payload.hostId === action.payload.myPlayerId,
         config: action.payload.config,
         wordListKey: action.payload.wordListKey,
         phase: nextPhase,
@@ -262,7 +294,8 @@ function reducer(state, action) {
 export function useMultiplayerGame() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const socketRef = useRef(null);
-  const connectionIdRef = useRef(null);
+  const playerIdRef = useRef(getOrCreatePlayerId());
+  const playerNameRef = useRef('');
   const wordFoundSentRef = useRef(new Set());
 
   const cleanup = useCallback(() => {
@@ -270,7 +303,6 @@ export function useMultiplayerGame() {
       socketRef.current.close();
       socketRef.current = null;
     }
-    connectionIdRef.current = null;
     wordFoundSentRef.current = new Set();
   }, []);
 
@@ -279,16 +311,23 @@ export function useMultiplayerGame() {
   }, [cleanup]);
 
   const setupSocket = useCallback(
-    (roomId) => {
+    (roomId, playerName) => {
       cleanup();
+      playerNameRef.current = playerName;
+      savePlayerName(playerName);
 
       const socket = new PartySocket({
         host: PARTYKIT_HOST,
         room: roomId,
       });
 
+      // Send JOIN on every open — including auto-reconnections
       socket.addEventListener('open', () => {
-        connectionIdRef.current = socket.id;
+        socket.send(JSON.stringify({
+          type: 'JOIN',
+          playerId: playerIdRef.current,
+          playerName: playerNameRef.current,
+        }));
       });
 
       socket.addEventListener('message', (event) => {
@@ -307,7 +346,7 @@ export function useMultiplayerGame() {
           case 'ROOM_STATE':
             dispatch({
               type: 'ROOM_STATE',
-              payload: { ...data, myConnectionId: socket.id },
+              payload: { ...data, myPlayerId: playerIdRef.current },
             });
             break;
 
@@ -371,25 +410,19 @@ export function useMultiplayerGame() {
     (playerName) => {
       const roomId = generateRoomCode();
       dispatch({ type: 'SET_ROOM_CODE', payload: roomId });
-      setupSocket(roomId);
-      setTimeout(() => {
-        send({ type: 'JOIN', playerName });
-        dispatch({ type: 'ENTER_WAITING' });
-      }, 500);
+      setupSocket(roomId, playerName);
+      dispatch({ type: 'ENTER_WAITING' });
     },
-    [setupSocket, send]
+    [setupSocket]
   );
 
   const joinRoom = useCallback(
     (roomId, playerName) => {
       dispatch({ type: 'SET_ROOM_CODE', payload: roomId.toUpperCase() });
-      setupSocket(roomId.toUpperCase());
-      setTimeout(() => {
-        send({ type: 'JOIN', playerName });
-        dispatch({ type: 'ENTER_WAITING' });
-      }, 500);
+      setupSocket(roomId.toUpperCase(), playerName);
+      dispatch({ type: 'ENTER_WAITING' });
     },
-    [setupSocket, send]
+    [setupSocket]
   );
 
   const updateConfig = useCallback(

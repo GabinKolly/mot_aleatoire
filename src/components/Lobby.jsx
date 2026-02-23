@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import BlackButton from './BlackButton';
+import { getSavedPlayerName } from '../hooks/useMultiplayerGame';
 
 export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
   const [joinCode, setJoinCode] = useState('');
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(() => getSavedPlayerName());
   const [mode, setMode] = useState(null);
 
   const handleCreate = () => {

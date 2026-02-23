@@ -1,3 +1,5 @@
+const DISCONNECT_GRACE_PERIOD = 15000; // 15 seconds
+
 const DEFAULT_CONFIG = {
   gameTime: 180,
   wordTime: 30,
@@ -8,8 +10,10 @@ const DEFAULT_CONFIG = {
 export default class GameRoom {
   constructor(room) {
     this.room = room;
-    this.players = new Map();
-    this.hostId = null;
+    this.players = new Map(); // playerId -> { name, number, score, wordsFound, connectionId, connected }
+    this.connectionToPlayer = new Map(); // connection.id -> playerId
+    this.disconnectTimers = new Map(); // playerId -> timeoutId
+    this.hostPlayerId = null;
     this.status = 'waiting';
     this.config = { ...DEFAULT_CONFIG };
     this.wordListKey = 'default';
@@ -25,8 +29,11 @@ export default class GameRoom {
 
   broadcast(message) {
     const data = JSON.stringify(message);
-    for (const conn of this.room.getConnections()) {
-      conn.send(data);
+    for (const player of this.players.values()) {
+      if (player.connectionId) {
+        const conn = this.room.getConnection(player.connectionId);
+        if (conn) conn.send(data);
+      }
     }
   }
 
@@ -38,12 +45,13 @@ export default class GameRoom {
   }
 
   getPlayerList() {
-    return Array.from(this.players.entries()).map(([id, player]) => ({
-      id,
+    return Array.from(this.players.entries()).map(([playerId, player]) => ({
+      id: playerId,
       name: player.name,
       number: player.number,
       score: player.score,
       wordsFound: player.wordsFound,
+      connected: player.connected,
     }));
   }
 
@@ -51,7 +59,7 @@ export default class GameRoom {
     this.broadcast({
       type: 'ROOM_STATE',
       players: this.getPlayerList(),
-      hostId: this.hostId,
+      hostId: this.hostPlayerId,
       config: this.config,
       wordListKey: this.wordListKey,
       status: this.status,
@@ -161,39 +169,45 @@ export default class GameRoom {
     });
   }
 
-  onConnect(connection) {
-    if (this.players.size >= 2) {
-      connection.send(JSON.stringify({ type: 'ROOM_FULL' }));
-      connection.close();
-      return;
-    }
+  // eslint-disable-next-line no-unused-vars
+  onConnect(_connection) {
+    // Don't add player yet — wait for JOIN message.
+    // PartySocket sends JOIN automatically on every open (including reconnections).
+  }
 
-    const playerNumber = this.players.size === 0 ? 1 : 2;
-    this.players.set(connection.id, {
-      name: `Joueur ${playerNumber}`,
-      number: playerNumber,
-      score: 0,
-      wordsFound: 0,
-    });
+  onClose(connection) {
+    const playerId = this.connectionToPlayer.get(connection.id);
+    this.connectionToPlayer.delete(connection.id);
 
-    if (playerNumber === 1) {
-      this.hostId = connection.id;
-    }
+    if (!playerId) return;
 
-    this.sendTo(connection.id, {
-      type: 'WELCOME',
-      playerNumber,
-      roomId: this.room.id,
-    });
+    const player = this.players.get(playerId);
+    if (!player) return;
+
+    player.connected = false;
+    player.connectionId = null;
+
+    // Start grace period before treating as a real disconnect
+    const timer = setTimeout(() => {
+      this.disconnectTimers.delete(playerId);
+      this.handlePlayerTimeout(playerId);
+    }, DISCONNECT_GRACE_PERIOD);
+
+    this.disconnectTimers.set(playerId, timer);
 
     this.broadcastRoomState();
   }
 
-  onClose(connection) {
-    const player = this.players.get(connection.id);
-    this.players.delete(connection.id);
+  handlePlayerTimeout(playerId) {
+    const player = this.players.get(playerId);
+    if (!player) return;
 
-    if (this.status === 'playing' && player) {
+    // If they reconnected in the meantime, do nothing
+    if (player.connected) return;
+
+    this.players.delete(playerId);
+
+    if (this.status === 'playing') {
       const remainingPlayer = Array.from(this.players.values())[0];
       this.endGame({
         winnerOverride: remainingPlayer?.number ?? null,
@@ -203,15 +217,96 @@ export default class GameRoom {
       return;
     }
 
-    if (this.players.size > 0 && connection.id === this.hostId) {
+    if (this.players.size > 0 && playerId === this.hostPlayerId) {
       const [newHostId] = this.players.keys();
-      this.hostId = newHostId;
+      this.hostPlayerId = newHostId;
     }
 
     this.broadcast({
       type: 'PLAYER_DISCONNECTED',
-      playerNumber: player?.number,
+      playerNumber: player.number,
     });
+    this.broadcastRoomState();
+  }
+
+  handleJoin(data, sender) {
+    const playerId = data.playerId;
+    if (!playerId) return;
+
+    const playerName = (data.playerName || '').slice(0, 20);
+    const existingPlayer = this.players.get(playerId);
+
+    if (existingPlayer) {
+      // Reconnection — cancel any pending disconnect timer
+      const timer = this.disconnectTimers.get(playerId);
+      if (timer) {
+        clearTimeout(timer);
+        this.disconnectTimers.delete(playerId);
+      }
+
+      // Clean up old connection mapping for this player
+      for (const [connId, pid] of this.connectionToPlayer.entries()) {
+        if (pid === playerId) this.connectionToPlayer.delete(connId);
+      }
+
+      existingPlayer.connectionId = sender.id;
+      existingPlayer.connected = true;
+      if (playerName) existingPlayer.name = playerName;
+      this.connectionToPlayer.set(sender.id, playerId);
+
+      this.sendTo(sender.id, {
+        type: 'WELCOME',
+        playerNumber: existingPlayer.number,
+        roomId: this.room.id,
+      });
+
+      // If game is in progress, sync timers
+      if (this.status === 'playing') {
+        this.sendTo(sender.id, {
+          type: 'TIMER_SYNC',
+          gameTimeLeft: this.gameTimeLeft,
+          wordTimeLeft: this.wordTimeLeft,
+        });
+      }
+
+      this.broadcastRoomState();
+      return;
+    }
+
+    // New player — check room availability
+    if (this.players.size >= 2) {
+      this.sendTo(sender.id, { type: 'ROOM_FULL' });
+      return;
+    }
+
+    if (this.status === 'playing' || this.status === 'gameOver') {
+      this.sendTo(sender.id, { type: 'ROOM_FULL' });
+      return;
+    }
+
+    const playerNumber = this.players.size === 0 ? 1
+      : (Array.from(this.players.values()).some((p) => p.number === 1) ? 2 : 1);
+
+    this.players.set(playerId, {
+      name: playerName || `Joueur ${playerNumber}`,
+      number: playerNumber,
+      score: 0,
+      wordsFound: 0,
+      connectionId: sender.id,
+      connected: true,
+    });
+    this.connectionToPlayer.set(sender.id, playerId);
+
+    if (this.players.size === 1 || !this.hostPlayerId) {
+      this.hostPlayerId = playerId;
+    }
+
+    this.sendTo(sender.id, {
+      type: 'WELCOME',
+      playerNumber,
+      roomId: this.room.id,
+    });
+
     this.broadcastRoomState();
   }
 
@@ -223,17 +318,19 @@ export default class GameRoom {
       return;
     }
 
-    const player = this.players.get(sender.id);
+    if (data.type === 'JOIN') {
+      this.handleJoin(data, sender);
+      return;
+    }
+
+    const playerId = this.connectionToPlayer.get(sender.id);
+    if (!playerId) return;
+    const player = this.players.get(playerId);
     if (!player) return;
 
     switch (data.type) {
-      case 'JOIN':
-        player.name = (data.playerName || `Joueur ${player.number}`).slice(0, 20);
-        this.broadcastRoomState();
-        break;
-
       case 'UPDATE_CONFIG':
-        if (sender.id !== this.hostId || this.status !== 'waiting') break;
+        if (playerId !== this.hostPlayerId || this.status !== 'waiting') break;
         if (data.config) {
           this.config = {
             gameTime: Math.max(30, Math.min(600, data.config.gameTime ?? this.config.gameTime)),
@@ -249,8 +346,13 @@ export default class GameRoom {
         break;
 
       case 'START_GAME':
-        if (sender.id !== this.hostId) break;
+        if (playerId !== this.hostPlayerId) break;
         if (this.players.size < 2 || this.status !== 'waiting') break;
+
+        // All players must be connected
+        for (const p of this.players.values()) {
+          if (!p.connected) return;
+        }
 
         this.status = 'playing';
         this.seed = Math.floor(Math.random() * 2147483647);

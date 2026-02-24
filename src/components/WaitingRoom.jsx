@@ -5,6 +5,44 @@ import BlackButton from './BlackButton';
 import SettingsNumberField from './SettingsNumberField';
 import { useClampedInput } from '../hooks/useClampedInput';
 
+async function copyText(text) {
+  if (!text) return false;
+
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback below
+    }
+  }
+
+  if (typeof document === 'undefined' || typeof document.execCommand !== 'function') {
+    return false;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  textarea.style.pointerEvents = 'none';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
+
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 export default function WaitingRoom({ state, actions }) {
   const { roomCode, players, isHost, config, wordListKey } = state;
   const { updateConfig, startGame, goBackToLobby } = actions;
@@ -39,12 +77,12 @@ export default function WaitingRoom({ state, actions }) {
   ]);
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(roomCode);
+    if (!roomCode) return;
+
+    const success = await copyText(roomCode);
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // ignore
     }
   };
 
@@ -60,6 +98,7 @@ export default function WaitingRoom({ state, actions }) {
             {roomCode}
           </span>
           <button
+            type="button"
             onClick={handleCopy}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >

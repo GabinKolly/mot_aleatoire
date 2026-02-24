@@ -14,16 +14,39 @@ const PARTYKIT_HOST =
 const STORAGE_KEY_PLAYER_NAME = 'mot-melange-player-name';
 const STORAGE_KEY_PLAYER_ID = 'mot-melange-player-id';
 
+function generatePlayerId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0'));
+    return [
+      hex.slice(0, 4).join(''),
+      hex.slice(4, 6).join(''),
+      hex.slice(6, 8).join(''),
+      hex.slice(8, 10).join(''),
+      hex.slice(10, 16).join(''),
+    ].join('-');
+  }
+
+  return `player-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function getOrCreatePlayerId() {
   try {
     let id = localStorage.getItem(STORAGE_KEY_PLAYER_ID);
     if (!id) {
-      id = crypto.randomUUID();
+      id = generatePlayerId();
       localStorage.setItem(STORAGE_KEY_PLAYER_ID, id);
     }
     return id;
   } catch {
-    return crypto.randomUUID();
+    return generatePlayerId();
   }
 }
 
@@ -78,7 +101,32 @@ const initialState = {
   forfeitedBy: null,
   lastClaimedBy: null,
   wordSkipped: false,
+  wordHistory: [],
 };
+
+function appendWordHistoryEntry(state, { wordIndex, claimedBy }) {
+  if (typeof wordIndex !== 'number' || Number.isNaN(wordIndex)) {
+    return state.wordHistory;
+  }
+
+  if (state.wordHistory.some((entry) => entry.wordIndex === wordIndex)) {
+    return state.wordHistory;
+  }
+
+  const wordEntry = state.wordSequence[wordIndex];
+  if (!wordEntry?.word) {
+    return state.wordHistory;
+  }
+
+  return [
+    ...state.wordHistory,
+    {
+      wordIndex,
+      word: wordEntry.word,
+      claimedBy: claimedBy ?? null,
+    },
+  ];
+}
 
 function reducer(state, action) {
   switch (action.type) {
@@ -112,6 +160,7 @@ function reducer(state, action) {
         isCorrect: nextPhase === 'waiting' ? false : state.isCorrect,
         tiles: nextPhase === 'waiting' ? [] : state.tiles,
         wordSkipped: false,
+        wordHistory: nextPhase === 'waiting' ? [] : state.wordHistory,
       };
     }
 
@@ -152,6 +201,7 @@ function reducer(state, action) {
         forfeitedBy: null,
         lastClaimedBy: null,
         wordSkipped: false,
+        wordHistory: [],
       };
     }
 
@@ -178,6 +228,10 @@ function reducer(state, action) {
       const { scores, playerNumber } = action.payload;
       const newScores = {};
       const newWordsFound = {};
+      const nextWordHistory = appendWordHistoryEntry(state, {
+        wordIndex: action.payload.wordIndex,
+        claimedBy: playerNumber,
+      });
       for (const [num, data] of Object.entries(scores)) {
         newScores[num] = data.score;
         newWordsFound[num] = data.wordsFound;
@@ -189,6 +243,7 @@ function reducer(state, action) {
         wordsFound: newWordsFound,
         lastClaimedBy: playerNumber,
         wordSkipped: false,
+        wordHistory: nextWordHistory,
         tiles: state.currentWord
           .split('')
           .map((letter, index) => ({ letter, id: index })),
@@ -198,10 +253,15 @@ function reducer(state, action) {
     case 'WORD_SKIPPED': {
       const current = state.wordSequence[action.payload.wordIndex];
       if (!current) return state;
+      const nextWordHistory = appendWordHistoryEntry(state, {
+        wordIndex: action.payload.wordIndex,
+        claimedBy: null,
+      });
       return {
         ...state,
         isCorrect: true,
         wordSkipped: true,
+        wordHistory: nextWordHistory,
         tiles: current.word
           .split('')
           .map((letter, index) => ({ letter, id: index })),
@@ -257,7 +317,13 @@ function reducer(state, action) {
       };
     }
 
-    case 'GAME_OVER':
+    case 'GAME_OVER': {
+      const nextWordHistory = state.currentWord
+        ? appendWordHistoryEntry(state, {
+          wordIndex: state.currentWordIndex,
+          claimedBy: null,
+        })
+        : state.wordHistory;
       return {
         ...state,
         phase: 'gameOver',
@@ -272,7 +338,9 @@ function reducer(state, action) {
         wordsFound: Object.fromEntries(
           Object.entries(action.payload.scores).map(([num, data]) => [num, data.wordsFound])
         ),
+        wordHistory: nextWordHistory,
       };
+    }
 
     case 'PLAYER_DISCONNECTED':
       return state;

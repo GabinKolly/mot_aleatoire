@@ -215,6 +215,7 @@ function MultiplayerGame({ onBack }) {
         <MultiplayerGameOverScreen
           scores={state.scores}
           wordsFound={state.wordsFound}
+          wordHistory={state.wordHistory}
           winner={state.winner}
           gameOverReason={state.gameOverReason}
           forfeitedBy={state.forfeitedBy}

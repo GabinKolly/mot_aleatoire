@@ -10,11 +10,17 @@ export default function Settings({
   selectedAddedListId,
   addedWordLists,
   wordLists,
+  highScoresByPreset,
+  highScoresByAddedListId,
+  currentListHighScore,
+  isUsingStandardSettings,
   onPresetChange,
   onSelectAddedList,
   onRenameAddedList,
   onRemoveAddedList,
   onFileUpload,
+  onResetToStandardForCurrentList,
+  onClearCurrentListHighScore,
   startTimeInput,
   onStartTimeChange,
   onStartTimeBlur,
@@ -33,6 +39,9 @@ export default function Settings({
   onMaxWordLengthBlur,
 }) {
   const fileInputRef = useRef(null);
+  const hasCurrentListHighScore = Number.isInteger(currentListHighScore);
+  const formatHighScore = (value) =>
+    Number.isInteger(value) ? `Meilleur score : ${value}` : 'Meilleur score : -';
   const gameTimeFields = [
     {
       key: 'startTime',
@@ -119,13 +128,29 @@ export default function Settings({
         </div>
       </div>
 
+      <div className="mb-6 pb-6 space-y-2">
+        <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <BlackButton
+            onClick={onResetToStandardForCurrentList}
+            className="px-4 py-2 rounded-lg text-sm"
+          >
+            Paramètres standards pour la liste choisie
+          </BlackButton>
+        </div>
+        {!isUsingStandardSettings && (
+          <p className="text-xs text-amber-700 mt-2">
+            Paramètres non standards : le score ne comptera pas pour le meilleur score.
+          </p>
+        )}
+      </div>
+
       <h3 className="text-md font-medium mb-3 text-black">Liste de mots</h3>
       <p className="text-sm text-black mb-4">
-        Liste actuelle: {wordListName} ({wordsCount} mots disponibles)
+        Liste actuelle : {wordListName} ({wordsCount} mots disponibles)
+        {` • ${formatHighScore(currentListHighScore)}`}
       </p>
 
       <div className="space-y-3 mb-4">
-        <p className="text-sm font-medium text-black">Listes prédéfinies:</p>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(wordLists).map(([key, list]) => (
             <button
@@ -145,7 +170,10 @@ export default function Settings({
                 borderStyle: 'solid',
               }}
             >
-              {list.name}
+              <span className="block">{list.name}</span>
+              <span className="block text-xs opacity-90">
+                {formatHighScore(highScoresByPreset?.[key] ?? null)}
+              </span>
             </button>
           ))}
         </div>
@@ -194,10 +222,13 @@ export default function Settings({
                 />
                 <button
                   onClick={() => onRemoveAddedList(list.id)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-white bg-red-600 border border-red-600 hover:bg-red-700 transition-colors"
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-red-700 bg-black border border-black hover:opacity-90 transition-colors"
                 >
                   Supprimer
                 </button>
+                <span className="text-xs text-gray-600 md:ml-2">
+                  {formatHighScore(highScoresByAddedListId?.[list.id] ?? null)}
+                </span>
               </div>
             ))}
           </div>
@@ -205,7 +236,6 @@ export default function Settings({
       </div>
 
       <div className="pt-4">
-        <p className="text-sm font-medium text-black mb-2">Ou importez votre liste:</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -220,7 +250,29 @@ export default function Settings({
           <Upload className="w-4 h-4" />
           Importer un fichier .txt
         </BlackButton>
-        <p className="text-xs text-black mt-2">Format: un mot par ligne</p>
+        <p className="text-xs text-black mt-2">Format : un mot par ligne</p>
+      </div>
+
+      <div className="pt-4 mt-4 border-t border-gray-200">
+        <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <button
+            type="button"
+            onClick={onClearCurrentListHighScore}
+            disabled={!hasCurrentListHighScore}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border bg-transparent ${
+              hasCurrentListHighScore
+                ? 'border-black text-red-700 hover:bg-gray-100'
+                : 'border-gray-400 text-red-300 cursor-not-allowed'
+            }`}
+          >
+            Effacer le meilleur score
+          </button>
+          {!hasCurrentListHighScore && (
+            <span className="text-xs text-gray-600">
+              Aucun meilleur score enregistré pour cette liste.
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

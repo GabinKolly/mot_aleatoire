@@ -5,6 +5,8 @@ export default function GameOverScreen({
   variant,
   currentWord,
   score,
+  isNewRecord = false,
+  completionTimeBonus = 0,
   onRestart,
 }) {
   const isVictory = variant === 'allWordsCompleted';
@@ -18,6 +20,10 @@ export default function GameOverScreen({
               Vous avez trouvé tous les mots !
             </p>
             <p className="text-2xl font-bold text-purple-700">Votre score est {score} !</p>
+            <p className="text-sm text-emerald-700 mt-2">
+              Bonus fin de liste: +{completionTimeBonus} points ({completionTimeBonus}{' '}
+              secondes restantes ajoutées au score)
+            </p>
           </>
         ) : (
           <>
@@ -28,6 +34,11 @@ export default function GameOverScreen({
               Vous avez obtenu un score de {score} !
             </p>
           </>
+        )}
+        {isNewRecord && (
+          <p className="text-2xl font-bold text-purple-700 mt-4">
+            C&apos;est un nouveau record !
+          </p>
         )}
       </div>
 

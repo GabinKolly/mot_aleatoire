@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { WORD_LISTS } from '../constants/wordLists';
 import { useClampedInput } from './useClampedInput';
 
@@ -11,6 +11,8 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
     setStartTime,
     setBonusTime,
     setAlternativeWordBonusTime,
+    resetSettingsToStandardForCurrentList,
+    clearHighScoreForCurrentList,
     setMinWordLength,
     setMaxWordLength,
   } = actions;
@@ -45,6 +47,32 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
     max: 100,
     parse: (value) => Number.parseInt(value, 10),
   });
+  const setStartTimeInputValue = startTimeInput.setInputValue;
+  const setBonusTimeInputValue = bonusTimeInput.setInputValue;
+  const setAlternativeWordBonusTimeInputValue =
+    alternativeWordBonusTimeInput.setInputValue;
+  const setMinWordLengthInputValue = minWordLengthInput.setInputValue;
+  const setMaxWordLengthInputValue = maxWordLengthInput.setInputValue;
+
+  useEffect(() => {
+    setStartTimeInputValue(String(state.startTime));
+  }, [state.startTime, setStartTimeInputValue]);
+
+  useEffect(() => {
+    setBonusTimeInputValue(String(state.bonusTime));
+  }, [state.bonusTime, setBonusTimeInputValue]);
+
+  useEffect(() => {
+    setAlternativeWordBonusTimeInputValue(String(state.alternativeWordBonusTime));
+  }, [state.alternativeWordBonusTime, setAlternativeWordBonusTimeInputValue]);
+
+  useEffect(() => {
+    setMinWordLengthInputValue(String(state.minWordLength));
+  }, [state.minWordLength, setMinWordLengthInputValue]);
+
+  useEffect(() => {
+    setMaxWordLengthInputValue(String(state.maxWordLength));
+  }, [state.maxWordLength, state.minWordLength, setMaxWordLengthInputValue]);
 
   useEffect(() => {
     setStartTime(startTimeInput.committedValue);
@@ -66,6 +94,53 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
     setMaxWordLength(maxWordLengthInput.committedValue);
   }, [setMaxWordLength, maxWordLengthInput.committedValue]);
 
+  const highScoresByPreset = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.keys(WORD_LISTS).map((presetKey) => [
+          presetKey,
+          state.highScores[`preset:${presetKey}`] ?? null,
+        ])
+      ),
+    [state.highScores]
+  );
+
+  const highScoresByAddedListId = useMemo(
+    () =>
+      Object.fromEntries(
+        state.addedWordLists.map((list) => [
+          list.id,
+          state.highScores[`added:${list.id}`] ?? null,
+        ])
+      ),
+    [state.addedWordLists, state.highScores]
+  );
+
+  const handleResetToStandardForCurrentList = useCallback(() => {
+    const standardSettings = state.currentListStandardSettings;
+    if (!standardSettings) {
+      return;
+    }
+
+    setStartTimeInputValue(String(standardSettings.startTime));
+    setBonusTimeInputValue(String(standardSettings.bonusTime));
+    setAlternativeWordBonusTimeInputValue(
+      String(standardSettings.alternativeWordBonusTime)
+    );
+    setMinWordLengthInputValue(String(standardSettings.minWordLength));
+    setMaxWordLengthInputValue(String(standardSettings.maxWordLength));
+
+    resetSettingsToStandardForCurrentList();
+  }, [
+    state.currentListStandardSettings,
+    setStartTimeInputValue,
+    setBonusTimeInputValue,
+    setAlternativeWordBonusTimeInputValue,
+    setMinWordLengthInputValue,
+    setMaxWordLengthInputValue,
+    resetSettingsToStandardForCurrentList,
+  ]);
+
   return {
     wordListName: state.wordListName,
     wordsCount: state.words.length,
@@ -73,11 +148,17 @@ export function useSettingsBindings({ state, actions, onFileUpload }) {
     selectedAddedListId: state.selectedAddedListId,
     addedWordLists: state.addedWordLists,
     wordLists: WORD_LISTS,
+    highScoresByPreset,
+    highScoresByAddedListId,
+    currentListHighScore: state.currentListHighScore,
+    isUsingStandardSettings: state.isUsingStandardSettings,
     onPresetChange: changePreset,
     onSelectAddedList: selectAddedWordList,
     onRenameAddedList: renameAddedWordList,
     onRemoveAddedList: removeAddedWordList,
     onFileUpload,
+    onResetToStandardForCurrentList: handleResetToStandardForCurrentList,
+    onClearCurrentListHighScore: clearHighScoreForCurrentList,
     startTimeInput: startTimeInput.inputValue,
     onStartTimeChange: startTimeInput.onChange,
     onStartTimeBlur: startTimeInput.onBlur,

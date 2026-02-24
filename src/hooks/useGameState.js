@@ -3,6 +3,39 @@ import { WORD_LISTS } from '../constants/wordLists';
 import { loadPersistedConfig, savePersistedConfig } from '../constants/persistence';
 import { buildShuffledTiles, pickWordFromList } from '../utils/wordPicking';
 
+const DEFAULT_TIME_SETTINGS = {
+  startTime: 45,
+  bonusTime: 10,
+  alternativeWordBonusTime: 5,
+};
+
+const buildListScoreKey = ({ selectedPreset, selectedAddedListId }) =>
+  selectedAddedListId ? `added:${selectedAddedListId}` : `preset:${selectedPreset}`;
+
+const getStandardWordLengthForSelection = ({
+  selectedPreset,
+  selectedAddedListId,
+}) => {
+  if (selectedAddedListId) {
+    return { minWordLength: 3, maxWordLength: 30 };
+  }
+
+  if (selectedPreset === 'default' || selectedPreset === 'hard') {
+    return { minWordLength: 4, maxWordLength: 7 };
+  }
+
+  if (selectedPreset === 'motsAvecW') {
+    return { minWordLength: 3, maxWordLength: 7 };
+  }
+
+  return { minWordLength: 3, maxWordLength: 30 };
+};
+
+const getStandardSettingsForSelection = (selection) => ({
+  ...DEFAULT_TIME_SETTINGS,
+  ...getStandardWordLengthForSelection(selection),
+});
+
 const createListNameResolver = (existingNames) => {
   const used = new Set(existingNames);
 
@@ -84,6 +117,8 @@ const getInitialState = (initialPresetKey) => {
     timeLeft: 0,
     score: 0,
     wordsFound: 0,
+    completionTimeBonus: 0,
+    lastGameWasNewRecord: false,
     isPlaying: false,
     gameOver: false,
     allWordsCompleted: false,
@@ -92,6 +127,7 @@ const getInitialState = (initialPresetKey) => {
     selectedPreset: resolvedList.selectedPreset,
     selectedAddedListId: resolvedList.selectedAddedListId,
     addedWordLists,
+    highScores: persisted?.highScores ?? {},
     startTime: persistedSettings?.startTime ?? 45,
     bonusTime: persistedSettings?.bonusTime ?? 10,
     alternativeWordBonusTime: persistedSettings?.alternativeWordBonusTime ?? 5,
@@ -108,6 +144,8 @@ const buildRoundResetState = (state, overrides = {}) => ({
   usedWords: [],
   score: 0,
   wordsFound: 0,
+  completionTimeBonus: 0,
+  lastGameWasNewRecord: false,
   timeLeft: 0,
   currentWord: '',
   tiles: [],
@@ -138,6 +176,24 @@ function reducer(state, action) {
       return { ...state, bonusTime: action.payload };
     case 'SET_ALT_BONUS_TIME':
       return { ...state, alternativeWordBonusTime: action.payload };
+    case 'CLEAR_HIGH_SCORE_FOR_CURRENT_LIST': {
+      const listKey = buildListScoreKey({
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: state.selectedAddedListId,
+      });
+      const { [listKey]: _removedHighScore, ...nextHighScores } = state.highScores;
+      return {
+        ...state,
+        highScores: nextHighScores,
+      };
+    }
+    case 'RESET_SETTINGS_TO_STANDARD': {
+      const standardSettings = getStandardSettingsForSelection({
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: state.selectedAddedListId,
+      });
+      return buildRoundResetState(state, standardSettings);
+    }
     case 'SET_MIN_WORD_LENGTH': {
       const nextMin = action.payload;
       const nextMax = Math.max(state.maxWordLength, nextMin);
@@ -192,18 +248,27 @@ function reducer(state, action) {
       const nextAddedWordLists = state.addedWordLists.filter(
         (list) => list.id !== removedId
       );
+      const { [`added:${removedId}`]: _removedHighScore, ...nextHighScores } =
+        state.highScores;
 
       if (state.selectedAddedListId === removedId) {
-        return buildListSelectionState(state, {
-          selectedPreset: 'default',
-          selectedAddedListId: null,
-          addedWordLists: nextAddedWordLists,
-        });
+        return buildListSelectionState(
+          {
+            ...state,
+            highScores: nextHighScores,
+          },
+          {
+            selectedPreset: 'default',
+            selectedAddedListId: null,
+            addedWordLists: nextAddedWordLists,
+          }
+        );
       }
 
       return {
         ...state,
         addedWordLists: nextAddedWordLists,
+        highScores: nextHighScores,
       };
     }
     case 'START_GAME':
@@ -230,7 +295,13 @@ function reducer(state, action) {
         isBonusWord: false,
       };
     case 'NO_MORE_WORDS':
-      return { ...state, isPlaying: false, allWordsCompleted: true };
+      return {
+        ...state,
+        isPlaying: false,
+        allWordsCompleted: true,
+        score: state.score + Math.max(0, state.timeLeft),
+        completionTimeBonus: Math.max(0, state.timeLeft),
+      };
     case 'CORRECT_WORD':
       // Force solved visual order during the success animation.
       return {
@@ -256,6 +327,22 @@ function reducer(state, action) {
       return { ...state, timeLeft: state.timeLeft - 1 };
     case 'TIME_UP':
       return { ...state, isPlaying: false, gameOver: true };
+    case 'SET_HIGH_SCORE_FOR_LIST': {
+      const { listKey, score } = action.payload;
+      const previous = state.highScores[listKey] ?? 0;
+      if (score <= previous) {
+        return state;
+      }
+
+      return {
+        ...state,
+        highScores: {
+          ...state.highScores,
+          [listKey]: score,
+        },
+        lastGameWasNewRecord: true,
+      };
+    }
     default:
       return state;
   }
@@ -265,6 +352,40 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
   const [state, dispatch] = useReducer(reducer, initialPresetKey, getInitialState);
   const bonusAwardedWordsRef = useRef(new Set());
   const currentWordScoredRef = useRef(false);
+  const activeRunSnapshotRef = useRef({
+    isActive: false,
+    isEligible: false,
+    listKey: null,
+    finalized: false,
+  });
+
+  const currentListKey = useMemo(
+    () =>
+      buildListScoreKey({
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: state.selectedAddedListId,
+      }),
+    [state.selectedPreset, state.selectedAddedListId]
+  );
+
+  const currentListStandardSettings = useMemo(
+    () =>
+      getStandardSettingsForSelection({
+        selectedPreset: state.selectedPreset,
+        selectedAddedListId: state.selectedAddedListId,
+      }),
+    [state.selectedPreset, state.selectedAddedListId]
+  );
+
+  const isUsingStandardSettings =
+    state.startTime === currentListStandardSettings.startTime &&
+    state.bonusTime === currentListStandardSettings.bonusTime &&
+    state.alternativeWordBonusTime ===
+      currentListStandardSettings.alternativeWordBonusTime &&
+    state.minWordLength === currentListStandardSettings.minWordLength &&
+    state.maxWordLength === currentListStandardSettings.maxWordLength;
+
+  const currentListHighScore = state.highScores[currentListKey] ?? null;
 
   const words = useMemo(
     () =>
@@ -351,7 +472,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
 
   useEffect(() => {
     savePersistedConfig({
-      version: 2,
+      version: 3,
       settings: {
         startTime: state.startTime,
         bonusTime: state.bonusTime,
@@ -364,6 +485,7 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
         selectedAddedListId: state.selectedAddedListId,
         added: state.addedWordLists,
       },
+      highScores: state.highScores,
     });
   }, [
     state.startTime,
@@ -374,6 +496,45 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
     state.selectedPreset,
     state.selectedAddedListId,
     state.addedWordLists,
+    state.highScores,
+  ]);
+
+  useEffect(() => {
+    const run = activeRunSnapshotRef.current;
+
+    if (!run.isActive || run.finalized || state.isPlaying) {
+      return;
+    }
+
+    if (!state.gameOver && !state.allWordsCompleted) {
+      return;
+    }
+
+    run.finalized = true;
+    run.isActive = false;
+
+    if (!run.isEligible || typeof run.listKey !== 'string') {
+      return;
+    }
+
+    const previousBest = state.highScores[run.listKey] ?? 0;
+    if (state.score <= previousBest) {
+      return;
+    }
+
+    dispatch({
+      type: 'SET_HIGH_SCORE_FOR_LIST',
+      payload: {
+        listKey: run.listKey,
+        score: state.score,
+      },
+    });
+  }, [
+    state.isPlaying,
+    state.gameOver,
+    state.allWordsCompleted,
+    state.score,
+    state.highScores,
   ]);
 
   const resetBonusRef = useCallback(() => {
@@ -383,8 +544,14 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
 
   const startGame = useCallback(() => {
     resetBonusRef();
+    activeRunSnapshotRef.current = {
+      isActive: true,
+      isEligible: isUsingStandardSettings,
+      listKey: currentListKey,
+      finalized: false,
+    };
     dispatch({ type: 'START_GAME' });
-  }, [resetBonusRef]);
+  }, [resetBonusRef, isUsingStandardSettings, currentListKey]);
 
   const giveUp = useCallback(() => dispatch({ type: 'GIVE_UP' }), []);
   const toggleSettings = useCallback(
@@ -495,6 +662,15 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
     []
   );
 
+  const resetSettingsToStandardForCurrentList = useCallback(() => {
+    resetBonusRef();
+    dispatch({ type: 'RESET_SETTINGS_TO_STANDARD' });
+  }, [resetBonusRef]);
+
+  const clearHighScoreForCurrentList = useCallback(() => {
+    dispatch({ type: 'CLEAR_HIGH_SCORE_FOR_CURRENT_LIST' });
+  }, []);
+
   const setMinWordLength = useCallback(
     (value) => {
       resetBonusRef();
@@ -541,6 +717,8 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,
+      resetSettingsToStandardForCurrentList,
+      clearHighScoreForCurrentList,
       setMinWordLength,
       setMaxWordLength,
       setTiles,
@@ -559,6 +737,8 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,
+      resetSettingsToStandardForCurrentList,
+      clearHighScoreForCurrentList,
       setMinWordLength,
       setMaxWordLength,
       setTiles,
@@ -573,6 +753,10 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       words,
       wordsSet,
       bonusCheckWordsSet,
+      currentListKey,
+      currentListStandardSettings,
+      isUsingStandardSettings,
+      currentListHighScore,
     },
     actions,
   };

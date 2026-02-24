@@ -82,10 +82,15 @@ function SoloGame({ onBack }) {
         timeLeft={state.timeLeft}
         wordsFound={state.wordsFound}
         score={state.score}
+        highScore={state.currentListHighScore}
       />
 
       {!state.isPlaying && !state.gameOver && !state.allWordsCompleted && (
-        <StartScreen onStart={startGame} onBack={onBack} />
+        <StartScreen
+          onStart={startGame}
+          onBack={onBack}
+          isScoreEligibleForHighScore={state.isUsingStandardSettings}
+        />
       )}
 
       {!state.isPlaying && state.gameOver && (
@@ -93,6 +98,7 @@ function SoloGame({ onBack }) {
           variant="gameOver"
           currentWord={state.currentWord}
           score={state.score}
+          isNewRecord={state.lastGameWasNewRecord}
           onRestart={startGame}
         />
       )}
@@ -102,6 +108,8 @@ function SoloGame({ onBack }) {
           variant="allWordsCompleted"
           currentWord={state.currentWord}
           score={state.score}
+          isNewRecord={state.lastGameWasNewRecord}
+          completionTimeBonus={state.completionTimeBonus}
           onRestart={startGame}
         />
       )}

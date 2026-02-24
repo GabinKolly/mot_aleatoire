@@ -1,11 +1,11 @@
 import { useValuePopup } from '../hooks/useValuePopup';
 
-export default function StatsPanel({ timeLeft, wordsFound, score }) {
+export default function StatsPanel({ timeLeft, wordsFound, score, highScore }) {
   const wordsFoundDelta = useValuePopup(wordsFound);
   const scoreDelta = useValuePopup(score);
 
   return (
-    <div className="grid grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div className="bg-emerald-50 p-4 rounded-lg text-center">
         <div className="text-3xl font-bold text-emerald-700">
           {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
@@ -37,6 +37,12 @@ export default function StatsPanel({ timeLeft, wordsFound, score }) {
         )}
         <div className="text-3xl font-bold text-purple-700">{score}</div>
         <div className="text-sm text-gray-600 mt-1">Score</div>
+      </div>
+      <div className="bg-fuchsia-50 p-4 rounded-lg text-center">
+        <div className="text-3xl font-bold text-fuchsia-700">
+          {Number.isInteger(highScore) ? highScore : '-'}
+        </div>
+        <div className="text-sm text-gray-600 mt-1">Meilleur score</div>
       </div>
     </div>
   );

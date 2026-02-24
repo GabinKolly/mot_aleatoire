@@ -1,5 +1,5 @@
 export const STORAGE_KEY = 'mot_aleatoire:v1';
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 3;
 
 const clampInt = (value, min, max, fallback) => {
   const parsed = Number.parseInt(value, 10);
@@ -44,6 +44,29 @@ const sanitizeSettings = (rawSettings = {}) => {
     minWordLength,
     maxWordLength,
   };
+};
+
+const sanitizeHighScores = (rawHighScores) => {
+  if (!rawHighScores || typeof rawHighScores !== 'object' || Array.isArray(rawHighScores)) {
+    return {};
+  }
+
+  const sanitized = {};
+
+  Object.entries(rawHighScores).forEach(([key, value]) => {
+    if (typeof key !== 'string' || key.length === 0) {
+      return;
+    }
+
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return;
+    }
+
+    sanitized[key] = parsed;
+  });
+
+  return sanitized;
 };
 
 const sanitizeWords = (rawWords) => {
@@ -167,6 +190,12 @@ const migrateV1ToV2 = (parsed, presetKeys) => {
   };
 };
 
+const migrateV2ToV3 = (parsed, presetKeys) => ({
+  settings: sanitizeSettings(parsed.settings),
+  list: sanitizeListV2(parsed.list, presetKeys),
+  highScores: {},
+});
+
 export const loadPersistedConfig = ({ presetKeys }) => {
   if (typeof window === 'undefined') {
     return null;
@@ -184,7 +213,14 @@ export const loadPersistedConfig = ({ presetKeys }) => {
     }
 
     if (parsed.version === 1) {
-      return migrateV1ToV2(parsed, presetKeys);
+      return {
+        ...migrateV1ToV2(parsed, presetKeys),
+        highScores: {},
+      };
+    }
+
+    if (parsed.version === 2) {
+      return migrateV2ToV3(parsed, presetKeys);
     }
 
     if (parsed.version !== STORAGE_VERSION) {
@@ -194,6 +230,7 @@ export const loadPersistedConfig = ({ presetKeys }) => {
     return {
       settings: sanitizeSettings(parsed.settings),
       list: sanitizeListV2(parsed.list, presetKeys),
+      highScores: sanitizeHighScores(parsed.highScores),
     };
   } catch {
     return null;

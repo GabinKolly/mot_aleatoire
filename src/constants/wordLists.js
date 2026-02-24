@@ -1,12 +1,11 @@
 import dicoEasy from '../word-lists/dico_facile.txt?raw';
-import dicoMedium from '../word-lists/dico_moyen.txt?raw';
 import animauxWordsText from '../word-lists/animaux.txt?raw';
 import couleursWordsText from '../word-lists/couleurs.txt?raw';
 import emotionsWordsText from '../word-lists/emotions.txt?raw';
 import paysWordsText from '../word-lists/pays.txt?raw';
 import motsAvecWWordsText from '../word-lists/mots_avec_w.txt?raw';
 import dicoHard from '../word-lists/dico_difficile.txt?raw';
-import ODS from '../word-lists/dico.txt?raw';
+import hardBonusCheckWordsText from '../word-lists/dico.txt?raw';
 import dicoAvecAccents from '../word-lists/dico_avec_accents.txt?raw';
 
 export const parseWordsText = (text) =>
@@ -15,10 +14,9 @@ export const parseWordsText = (text) =>
     .map((word) => word.trim().toUpperCase())
     .filter((word) => word.length > 1);
 
-const odsWords = parseWordsText(ODS);
+const hardBonusCheckWords = parseWordsText(hardBonusCheckWordsText);
 const wordsWithAccents = parseWordsText(dicoAvecAccents);
 const easyWords = parseWordsText(dicoEasy);
-const mediumWords = parseWordsText(dicoMedium);
 const hardWords = parseWordsText(dicoHard);
 const animauxWords = parseWordsText(animauxWordsText);
 const couleursWords = parseWordsText(couleursWordsText);
@@ -32,15 +30,10 @@ export const WORD_LISTS = {
     words: easyWords,
     bonusCheckWords: wordsWithAccents,
   },
-  medium: {
-    name: 'Dictionnaire moyen',
-    words: mediumWords,
-    bonusCheckWords: wordsWithAccents,
-  },
-  ODS9: {
-    name: 'Dictionnaire difficile (sans accents)',
+  hard: {
+    name: 'Dictionnaire difficile',
     words: hardWords,
-    bonusCheckWords: odsWords,
+    bonusCheckWords: hardBonusCheckWords,
   },
   animaux: {
     name: 'Animaux',

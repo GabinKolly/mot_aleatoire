@@ -83,33 +83,35 @@ export default function GameScreen({
   if (variant === 'solo-mockup') {
     return (
       <div className="mm-solo-game">
-        <div className="mm-tiles-shell">
-          <div className="mm-tiles-row" style={{ gap: `${gapPx}px` }}>
-            {tiles.map((tile, index) => (
-              <Tile
-                key={tile.id}
-                tile={tile}
-                index={index}
-                tileSize={tileSize}
-                fontSize={fontSize}
-                cornerRadius={tileRadius}
-                borderWidth={tileBorderWidth}
-                isCorrect={isCorrect}
-                isBonusWord={isBonusWord}
-                revealType={revealType}
-                interactionsDisabled={interactionsDisabled}
-                draggedIndex={draggedIndex}
-                touchDragPosition={touchDragPosition}
-                onDragStart={onDragStart}
-                onDragOver={onDragOver}
-                onDragEnd={onDragEnd}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              />
-            ))}
+        <div className="mm-solo-middle-slot mm-solo-middle-slot--tiles">
+          <div className="mm-tiles-shell">
+            <div className="mm-tiles-row" style={{ gap: `${gapPx}px` }}>
+              {tiles.map((tile, index) => (
+                <Tile
+                  key={tile.id}
+                  tile={tile}
+                  index={index}
+                  tileSize={tileSize}
+                  fontSize={fontSize}
+                  cornerRadius={tileRadius}
+                  borderWidth={tileBorderWidth}
+                  isCorrect={isCorrect}
+                  isBonusWord={isBonusWord}
+                  revealType={revealType}
+                  interactionsDisabled={interactionsDisabled}
+                  draggedIndex={draggedIndex}
+                  touchDragPosition={touchDragPosition}
+                  onDragStart={onDragStart}
+                  onDragOver={onDragOver}
+                  onDragEnd={onDragEnd}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                />
+              ))}
+            </div>
+            {dragPreview}
           </div>
-          {dragPreview}
         </div>
 
         <div className="mm-solo-game__actions">

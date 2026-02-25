@@ -10,15 +10,17 @@ export default function StartScreen({
   if (variant === 'solo-mockup') {
     return (
       <div className="mm-solo-start">
-        {!isScoreEligibleForHighScore && (
-          <div className="mm-warning-panel" role="note">
-            <p>
-              Vous ne jouez pas avec les paramètres standards.
-              <br />
-              Votre score ne sera pas éligible au meilleur score.
-            </p>
-          </div>
-        )}
+        <div className="mm-solo-middle-slot">
+          {!isScoreEligibleForHighScore && (
+            <div className="mm-warning-panel" role="note">
+              <p>
+                Vous ne jouez pas avec les paramètres standards.
+                <br />
+                Votre score ne sera pas éligible au meilleur score.
+              </p>
+            </div>
+          )}
+        </div>
         <div className="mm-solo-start__cta">
           <button
             type="button"

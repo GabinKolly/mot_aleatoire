@@ -1,6 +1,3 @@
-import { Play, RotateCcw } from 'lucide-react';
-import GameActionButton from './GameActionButton';
-
 export default function GameOverScreen({
   variant,
   currentWord,
@@ -47,9 +44,13 @@ export default function GameOverScreen({
         )}
       </div>
 
-      <GameActionButton onClick={onRestart} icon={isVictory ? Play : RotateCcw}>
+      <button
+        type="button"
+        onClick={onRestart}
+        className="mm-pill-button mm-pill-button--beige mm-pill-button--title"
+      >
         {isVictory ? 'Nouvelle partie' : 'Recommencer'}
-      </GameActionButton>
+      </button>
     </div>
   );
 }

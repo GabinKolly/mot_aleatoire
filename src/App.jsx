@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  BarChart3,
   RotateCcw,
   Settings as SettingsIcon,
   Users,
@@ -168,7 +167,7 @@ function MainMenuScreen({ onSelectSolo, onSelectMultiplayer }) {
   );
 }
 
-function SoloGame({ onBack }) {
+function SoloGame({ onBack, onOpenMultiplayer }) {
   const { state, actions } = useGameState();
   const {
     startGame,
@@ -250,18 +249,11 @@ function SoloGame({ onBack }) {
 
           <div className="mm-solo-header__icons" aria-label="Raccourcis">
             <IconButton
-              label="Statistiques (bientôt disponible)"
+              label="Mode multijoueur"
               variant="mockup"
-              disabled
+              onClick={onOpenMultiplayer}
             >
               <Users className="w-6 h-6" />
-            </IconButton>
-            <IconButton
-              label="Classement (bientôt disponible)"
-              variant="mockup"
-              disabled
-            >
-              <BarChart3 className="w-6 h-6" />
             </IconButton>
             <IconButton
               label="Ouvrir les paramètres"
@@ -295,18 +287,21 @@ function SoloGame({ onBack }) {
             )}
 
             <div className="mm-solo-core__stack">
-              {state.isPlaying && (
-                <div className="mm-solo-giveup-row">
-                  <button
-                    type="button"
-                    onClick={giveUp}
-                    className="mm-pill-button mm-pill-button--beige"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Abandonner
-                  </button>
-                </div>
-              )}
+              <div className="mm-solo-giveup-row">
+                <button
+                  type="button"
+                  onClick={giveUp}
+                  disabled={!state.isPlaying}
+                  aria-hidden={!state.isPlaying}
+                  tabIndex={state.isPlaying ? 0 : -1}
+                  className={`mm-pill-button mm-pill-button--beige ${
+                    state.isPlaying ? '' : 'mm-pill-button--reserved-space'
+                  }`.trim()}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Abandonner
+                </button>
+              </div>
 
               <SoloStatsRow
                 timeLeft={state.timeLeft}
@@ -497,7 +492,12 @@ export default function App() {
   }
 
   if (mode === 'solo') {
-    return <SoloGame onBack={() => setMode(null)} />;
+    return (
+      <SoloGame
+        onBack={() => setMode(null)}
+        onOpenMultiplayer={() => setMode('multiplayer')}
+      />
+    );
   }
 
   return (

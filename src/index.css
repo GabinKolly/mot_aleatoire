@@ -349,6 +349,8 @@ a {
 .mm-solo-giveup-row {
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 3.9rem;
   padding-top: 0.05rem;
 }
 
@@ -400,7 +402,20 @@ a {
 .mm-solo-start {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.25rem;
+  align-items: center;
+  width: 100%;
+}
+
+.mm-solo-middle-slot {
+  width: 100%;
+  min-height: 7rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.mm-solo-middle-slot--tiles {
   align-items: center;
 }
 
@@ -466,10 +481,16 @@ a {
   padding-inline: 1.7rem;
 }
 
+.mm-pill-button--reserved-space {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .mm-solo-game {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 100%;
 }
 
 .mm-tiles-shell {

@@ -29,7 +29,7 @@ export default function ModeSelection({ onSelectSolo, onSelectMultiplayer }) {
           className="mm-menu-button mm-menu-button--red"
           data-mm-menu-anchor="end"
         >
-          <span>Compétition</span>
+          <span className="mm-menu-button__label--unavailable">Compétition</span>
         </button>
       </div>
     </div>

@@ -43,6 +43,10 @@ export default function GameScreen({
   onGiveUp,
   variant = 'default',
   showGiveUpButton = true,
+  primaryActionLabel = 'Mélanger',
+  primaryActionIcon: PrimaryActionIcon = Shuffle,
+  onPrimaryAction,
+  primaryActionDisabled,
 }) {
   const { size: tileSize, gapPx, fontSize } = calculateTileSize({
     screenWidth,
@@ -52,6 +56,8 @@ export default function GameScreen({
   const tileRadius = Math.max(4, Math.min(16, Math.round(tileSize * 0.18)));
   const tileBorderWidth = Math.max(2, Math.min(4, Math.round(tileSize * 0.07)));
   const interactionsDisabled = isCorrect;
+  const soloPrimaryActionHandler = onPrimaryAction ?? onReshuffle;
+  const soloPrimaryActionDisabled = primaryActionDisabled ?? interactionsDisabled;
   const dragPreview =
     touchDragPosition &&
     draggedIndex !== null &&
@@ -117,13 +123,13 @@ export default function GameScreen({
         <div className="mm-solo-game__actions">
           <button
             type="button"
-            onClick={onReshuffle}
-            disabled={interactionsDisabled}
+            onClick={soloPrimaryActionHandler}
+            disabled={soloPrimaryActionDisabled}
             className="mm-pill-button mm-pill-button--beige mm-pill-button--title"
             data-mm-band-end-anchor="solo"
           >
-            <Shuffle className="w-5 h-5" />
-            Mélanger
+            {PrimaryActionIcon && <PrimaryActionIcon className="w-5 h-5" />}
+            {primaryActionLabel}
           </button>
           {showGiveUpButton && (
             <button

@@ -244,6 +244,12 @@ a {
   flex-shrink: 0;
 }
 
+.mm-menu-button__label--unavailable {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-skip-ink: none;
+}
+
 .mm-band-zone {
   position: relative;
 }
@@ -352,6 +358,24 @@ a {
   align-items: center;
   min-height: 3.9rem;
   padding-top: 0.05rem;
+}
+
+.mm-solo-status-text {
+  color: var(--mm-ink);
+  font-weight: 700;
+  font-size: 0.78rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.mm-solo-status-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  max-width: 100%;
+  padding-inline: 0.25rem;
 }
 
 .mm-solo-stats {
@@ -575,6 +599,12 @@ a {
   border-color: #ea8778;
   color: var(--mm-ink);
   transform: scale(1.08);
+}
+
+.mm-tile-state--game-over {
+  background: var(--mm-bg);
+  border-color: var(--mm-danger);
+  color: var(--mm-ink);
 }
 
 .mm-tile-state--timeout {

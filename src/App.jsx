@@ -5,7 +5,6 @@ import {
   Users,
 } from 'lucide-react';
 import GameScreen from './components/GameScreen';
-import GameOverScreen from './components/GameOverScreen';
 import IconButton from './components/IconButton';
 import Lobby from './components/Lobby';
 import ModeSelection from './components/ModeSelection';
@@ -19,6 +18,8 @@ import { useDragAndDrop } from './hooks/useDragAndDrop';
 import { useGameState } from './hooks/useGameState';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSettingsBindings } from './hooks/useSettingsBindings';
+
+const NOOP = () => {};
 
 function formatClock(seconds) {
   const safeSeconds = Math.max(0, seconds);
@@ -216,7 +217,25 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
   });
 
   const isPreStart = !state.isPlaying && !state.gameOver && !state.allWordsCompleted;
-  const showCoreZone = isPreStart || state.isPlaying;
+  const hasEnded = !state.isPlaying && (state.gameOver || state.allWordsCompleted);
+  const showCoreZone = isPreStart || state.isPlaying || hasEnded;
+  const endScreenTiles =
+    state.currentWord.length > 0
+      ? state.currentWord
+          .split('')
+          .map((letter, index) => ({ letter, id: `end-${index}` }))
+      : state.tiles;
+  const bestScoreMessage = state.lastGameWasNewRecord
+    ? 'Vous avez battu le meilleur score !'
+    : `Le meilleur score est de ${
+        Number.isInteger(state.currentListHighScore) ? state.currentListHighScore : '-'
+      }`;
+  const endStatusLines = state.allWordsCompleted
+    ? [
+        `Vous avez trouvé tous les mots et obtenu un bonus de ${state.completionTimeBonus}`,
+        bestScoreMessage,
+      ]
+    : [bestScoreMessage];
   const soloBandStyle = useBandHighlightStyle(
     soloCoreRef,
     '[data-mm-band-start-anchor="solo"]',
@@ -288,19 +307,29 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
 
             <div className="mm-solo-core__stack">
               <div className="mm-solo-giveup-row">
-                <button
-                  type="button"
-                  onClick={giveUp}
-                  disabled={!state.isPlaying}
-                  aria-hidden={!state.isPlaying}
-                  tabIndex={state.isPlaying ? 0 : -1}
-                  className={`mm-pill-button mm-pill-button--beige ${
-                    state.isPlaying ? '' : 'mm-pill-button--reserved-space'
-                  }`.trim()}
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Abandonner
-                </button>
+                {hasEnded ? (
+                  <div className="mm-solo-status-stack" role="status" aria-live="polite">
+                    {endStatusLines.map((line) => (
+                      <p key={line} className="mm-solo-status-text">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={giveUp}
+                    disabled={!state.isPlaying}
+                    aria-hidden={!state.isPlaying}
+                    tabIndex={state.isPlaying ? 0 : -1}
+                    className={`mm-pill-button mm-pill-button--beige ${
+                      state.isPlaying ? '' : 'mm-pill-button--reserved-space'
+                    }`.trim()}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Abandonner
+                  </button>
+                )}
               </div>
 
               <SoloStatsRow
@@ -338,35 +367,34 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
                   onGiveUp={giveUp}
                 />
               )}
+
+              {hasEnded && (
+                <GameScreen
+                  variant="solo-mockup"
+                  showGiveUpButton={false}
+                  primaryActionLabel="Recommencer"
+                  primaryActionIcon={null}
+                  onPrimaryAction={startGame}
+                  primaryActionDisabled={false}
+                  tiles={endScreenTiles}
+                  isCorrect={true}
+                  isBonusWord={false}
+                  revealType={state.allWordsCompleted ? null : 'gameOver'}
+                  draggedIndex={null}
+                  touchDragPosition={null}
+                  screenWidth={screenWidth}
+                  onDragStart={NOOP}
+                  onDragOver={NOOP}
+                  onDragEnd={NOOP}
+                  onTouchStart={NOOP}
+                  onTouchMove={NOOP}
+                  onTouchEnd={NOOP}
+                  onReshuffle={NOOP}
+                  onGiveUp={NOOP}
+                />
+              )}
             </div>
           </section>
-        )}
-
-        {!state.isPlaying && state.gameOver && (
-          <div className="mm-solo-result-wrap">
-            <GameOverScreen
-              variant="gameOver"
-              currentWord={state.currentWord}
-              score={state.score}
-              highScore={state.currentListHighScore}
-              isNewRecord={state.lastGameWasNewRecord}
-              onRestart={startGame}
-            />
-          </div>
-        )}
-
-        {!state.isPlaying && state.allWordsCompleted && (
-          <div className="mm-solo-result-wrap">
-            <GameOverScreen
-              variant="allWordsCompleted"
-              currentWord={state.currentWord}
-              score={state.score}
-              highScore={state.currentListHighScore}
-              isNewRecord={state.lastGameWasNewRecord}
-              completionTimeBonus={state.completionTimeBonus}
-              onRestart={startGame}
-            />
-          </div>
         )}
       </div>
       <MobileFooter />

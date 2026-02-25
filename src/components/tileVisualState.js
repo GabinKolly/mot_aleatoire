@@ -1,4 +1,8 @@
 export function getTileVisualClasses({ isCorrect, isBonusWord, revealType }) {
+  if (isCorrect && revealType === 'gameOver') {
+    return 'mm-tile-state--game-over';
+  }
+
   if (isCorrect && revealType === 'opponent') {
     return 'mm-tile-state--opponent';
   }

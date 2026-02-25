@@ -5,6 +5,8 @@ export default function Tile({
   index,
   tileSize,
   fontSize,
+  cornerRadius,
+  borderWidth,
   isCorrect,
   isBonusWord,
   revealType,
@@ -29,10 +31,8 @@ export default function Tile({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       onTouchCancel={onTouchEnd}
-      className={`border-2 rounded-lg flex items-center justify-center font-bold ${
-        interactionsDisabled ? 'cursor-default' : 'cursor-move'
-      } select-none shadow-md transition-all flex-shrink-0 ${
-        interactionsDisabled ? '' : 'hover:shadow-lg'
+      className={`mm-tile ${interactionsDisabled ? 'cursor-default' : 'cursor-move'} ${
+        interactionsDisabled ? '' : 'mm-tile--interactive'
       } ${getTileVisualClasses(
         { isCorrect, isBonusWord, revealType }
       )} ${
@@ -46,6 +46,10 @@ export default function Tile({
         width: `${tileSize}px`,
         height: `${tileSize}px`,
         fontSize: `${fontSize}px`,
+        borderRadius:
+          typeof cornerRadius === 'number' ? `${cornerRadius}px` : undefined,
+        borderWidth:
+          typeof borderWidth === 'number' ? `${borderWidth}px` : undefined,
         touchAction: 'none',
       }}
     >

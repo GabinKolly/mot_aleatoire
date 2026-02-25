@@ -3,11 +3,24 @@ import { RotateCcw, Shuffle } from 'lucide-react';
 import Tile from './Tile';
 import { getTileVisualClasses } from './tileVisualState';
 
-const calculateTileSize = (screenWidth, numLetters) => {
-  const usableWidth = screenWidth;
-  const calculatedSize = Math.min(100, Math.floor((usableWidth / numLetters) / 1.2));
+const calculateTileSize = ({ screenWidth, numLetters, variant }) => {
+  const maxTilePlusSpacing = Math.max(1, Math.floor(screenWidth / numLetters));
+  const gapPx =
+    variant === 'solo-mockup'
+      ? Math.max(
+          1,
+          Math.floor(
+            Math.min(12, Math.max(2, Math.floor(maxTilePlusSpacing * 0.2))) / 2
+          )
+        )
+      : 4;
+  const maxTileSizeFromWidth = Math.max(18, maxTilePlusSpacing - gapPx);
+  const legacyCalculatedSize = Math.floor((screenWidth / numLetters) / 1.2);
+  const calculatedSize = Math.min(100, legacyCalculatedSize, maxTileSizeFromWidth);
+
   return {
     size: calculatedSize,
+    gapPx,
     fontSize: Math.max(10, Math.floor(calculatedSize * 0.42)),
   };
 };
@@ -28,22 +41,117 @@ export default function GameScreen({
   onTouchEnd,
   onReshuffle,
   onGiveUp,
+  variant = 'default',
+  showGiveUpButton = true,
 }) {
-  const { size: tileSize, fontSize } = calculateTileSize(screenWidth, tiles.length || 1);
+  const { size: tileSize, gapPx, fontSize } = calculateTileSize({
+    screenWidth,
+    numLetters: tiles.length || 1,
+    variant,
+  });
+  const tileRadius = Math.max(4, Math.min(16, Math.round(tileSize * 0.18)));
+  const tileBorderWidth = Math.max(2, Math.min(4, Math.round(tileSize * 0.07)));
   const interactionsDisabled = isCorrect;
+  const dragPreview =
+    touchDragPosition &&
+    draggedIndex !== null &&
+    tiles[draggedIndex] &&
+    typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className={`fixed mm-tile mm-tile--drag-proxy ${getTileVisualClasses({
+              isCorrect,
+              isBonusWord,
+              revealType,
+            })} z-50 pointer-events-none`}
+            style={{
+              width: `${tileSize}px`,
+              height: `${tileSize}px`,
+              fontSize: `${fontSize}px`,
+              borderRadius: `${tileRadius}px`,
+              borderWidth: `${tileBorderWidth}px`,
+              left: `${touchDragPosition.x - tileSize / 2}px`,
+              top: `${touchDragPosition.y - tileSize / 2}px`,
+            }}
+          >
+            {tiles[draggedIndex].letter}
+          </div>,
+          document.body
+        )
+      : null;
+
+  if (variant === 'solo-mockup') {
+    return (
+      <div className="mm-solo-game">
+        <div className="mm-tiles-shell">
+          <div className="mm-tiles-row" style={{ gap: `${gapPx}px` }}>
+            {tiles.map((tile, index) => (
+              <Tile
+                key={tile.id}
+                tile={tile}
+                index={index}
+                tileSize={tileSize}
+                fontSize={fontSize}
+                cornerRadius={tileRadius}
+                borderWidth={tileBorderWidth}
+                isCorrect={isCorrect}
+                isBonusWord={isBonusWord}
+                revealType={revealType}
+                interactionsDisabled={interactionsDisabled}
+                draggedIndex={draggedIndex}
+                touchDragPosition={touchDragPosition}
+                onDragStart={onDragStart}
+                onDragOver={onDragOver}
+                onDragEnd={onDragEnd}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              />
+            ))}
+          </div>
+          {dragPreview}
+        </div>
+
+        <div className="mm-solo-game__actions">
+          <button
+            type="button"
+            onClick={onReshuffle}
+            disabled={interactionsDisabled}
+            className="mm-pill-button mm-pill-button--beige mm-pill-button--title"
+            data-mm-band-end-anchor="solo"
+          >
+            <Shuffle className="w-5 h-5" />
+            Mélanger
+          </button>
+          {showGiveUpButton && (
+            <button
+              type="button"
+              onClick={onGiveUp}
+              className="mm-pill-button mm-pill-button--beige"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Abandonner
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-md:flex max-md:flex-col max-md:flex-grow">
       {/* Abandonner — mobile only, placed right below stats */}
-      <div className="text-center md:hidden">
-        <button
-          onClick={onGiveUp}
-          className="btn btn-danger btn-sm"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Abandonner
-        </button>
-      </div>
+      {showGiveUpButton && (
+        <div className="text-center md:hidden">
+          <button
+            onClick={onGiveUp}
+            className="btn btn-danger btn-sm"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Abandonner
+          </button>
+        </div>
+      )}
 
       {/* Spacer — pushes tiles to bottom on mobile */}
       <div className="flex-grow md:hidden" />
@@ -57,6 +165,8 @@ export default function GameScreen({
               index={index}
               tileSize={tileSize}
               fontSize={fontSize}
+              cornerRadius={tileRadius}
+              borderWidth={tileBorderWidth}
               isCorrect={isCorrect}
               isBonusWord={isBonusWord}
               revealType={revealType}
@@ -73,27 +183,7 @@ export default function GameScreen({
           ))}
         </div>
 
-        {touchDragPosition &&
-          draggedIndex !== null &&
-          tiles[draggedIndex] &&
-          typeof document !== 'undefined' &&
-          createPortal(
-            <div
-              className={`fixed border-2 rounded-lg flex items-center justify-center font-bold select-none shadow-xl z-50 pointer-events-none ${getTileVisualClasses(
-                { isCorrect, isBonusWord, revealType }
-              )}`}
-              style={{
-                width: `${tileSize}px`,
-                height: `${tileSize}px`,
-                fontSize: `${fontSize}px`,
-                left: `${touchDragPosition.x - tileSize / 2}px`,
-                top: `${touchDragPosition.y - tileSize / 2}px`,
-              }}
-            >
-              {tiles[draggedIndex].letter}
-            </div>,
-            document.body
-          )}
+        {dragPreview}
       </div>
 
       <div className="text-center flex items-center justify-center gap-3">
@@ -106,13 +196,15 @@ export default function GameScreen({
           Mélanger
         </button>
         {/* Abandonner — desktop only */}
-        <button
-          onClick={onGiveUp}
-          className="btn btn-danger btn-sm hidden md:inline-flex"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Abandonner
-        </button>
+        {showGiveUpButton && (
+          <button
+            onClick={onGiveUp}
+            className="btn btn-danger btn-sm hidden md:inline-flex"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Abandonner
+          </button>
+        )}
       </div>
     </div>
   );

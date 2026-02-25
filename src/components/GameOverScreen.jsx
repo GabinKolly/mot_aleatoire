@@ -5,11 +5,13 @@ export default function GameOverScreen({
   variant,
   currentWord,
   score,
+  highScore = null,
   isNewRecord = false,
   completionTimeBonus = 0,
   onRestart,
 }) {
   const isVictory = variant === 'allWordsCompleted';
+  const showHighScoreHint = Number.isInteger(highScore) && !isNewRecord;
 
   return (
     <div className="text-center py-12">
@@ -39,6 +41,9 @@ export default function GameOverScreen({
           <p className="text-2xl font-bold text-purple-700 mt-4">
             C&apos;est un nouveau record !
           </p>
+        )}
+        {showHighScoreHint && (
+          <p className="text-sm text-gray-600 mt-3">Le meilleur score est {highScore}.</p>
         )}
       </div>
 

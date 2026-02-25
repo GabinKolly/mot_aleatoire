@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import BlackButton from './BlackButton';
 import { getSavedPlayerName } from '../hooks/useMultiplayerGame';
 
 export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
@@ -40,20 +39,20 @@ export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
       {mode === null && (
         <div className="space-y-3">
           <div>
-            <BlackButton
+            <button
               onClick={handleCreate}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white text-lg font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="btn btn-primary btn-lg"
             >
               Créer une partie
-            </BlackButton>
+            </button>
           </div>
           <div>
-            <BlackButton
+            <button
               onClick={() => setMode('join')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+              className="btn btn-primary btn-lg"
             >
               Rejoindre une partie
-            </BlackButton>
+            </button>
           </div>
         </div>
       )}
@@ -73,20 +72,20 @@ export default function Lobby({ onCreateRoom, onJoinRoom, onBack, error }) {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <BlackButton
+          <button
             onClick={handleJoin}
             disabled={joinCode.trim().length < 4}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-lg"
           >
             Rejoindre
-          </BlackButton>
+          </button>
         </div>
       )}
 
       <div>
         <button
           onClick={mode ? () => setMode(null) : onBack}
-          className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+          className="btn btn-link"
         >
           <ArrowLeft className="w-4 h-4" />
           Retour

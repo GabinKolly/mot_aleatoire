@@ -21,7 +21,7 @@ export default function StartScreen({
         <div>
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+            className="btn btn-link"
           >
             <ArrowLeft className="w-4 h-4" />
             Retour

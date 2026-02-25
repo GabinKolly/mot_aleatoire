@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Copy, Check, Play, ArrowLeft } from 'lucide-react';
 import { WORD_LISTS } from '../constants/wordLists';
-import BlackButton from './BlackButton';
+import GameActionButton from './GameActionButton';
+import IconButton from './IconButton';
 import SettingsNumberField from './SettingsNumberField';
 import { useClampedInput } from '../hooks/useClampedInput';
 
@@ -97,17 +98,17 @@ export default function WaitingRoom({ state, actions }) {
           <span className="text-4xl font-mono font-bold tracking-widest text-emerald-700">
             {roomCode}
           </span>
-          <button
+          <IconButton
             type="button"
+            label={copied ? 'Code copié' : 'Copier le code'}
             onClick={handleCopy}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             {copied ? (
               <Check className="w-5 h-5 text-green-600" />
             ) : (
               <Copy className="w-5 h-5 text-gray-500" />
             )}
-          </button>
+          </IconButton>
         </div>
       </div>
 
@@ -196,13 +197,8 @@ export default function WaitingRoom({ state, actions }) {
                 <button
                   key={key}
                   onClick={() => setSelectedPreset(key)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-                  style={{
-                    backgroundColor: selectedPreset === key ? '#059669' : '#6b7280',
-                    borderColor: selectedPreset === key ? '#059669' : '#6b7280',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                  }}
+                  aria-pressed={selectedPreset === key}
+                  className="btn btn-choice btn-sm"
                 >
                   {list.name}
                 </button>
@@ -226,14 +222,9 @@ export default function WaitingRoom({ state, actions }) {
       <div className="text-center space-y-3">
         {isHost && (
           <div>
-            <BlackButton
-              onClick={startGame}
-              disabled={!canStart}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-xl font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Play className="w-6 h-6" />
+            <GameActionButton onClick={startGame} disabled={!canStart} icon={Play}>
               Commencer
-            </BlackButton>
+            </GameActionButton>
           </div>
         )}
         {!isHost && players.length < 2 && (
@@ -245,7 +236,7 @@ export default function WaitingRoom({ state, actions }) {
         <div>
           <button
             onClick={goBackToLobby}
-            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+            className="btn btn-link"
           >
             <ArrowLeft className="w-4 h-4" />
             Quitter la salle

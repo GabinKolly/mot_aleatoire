@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import GameScreen from './components/GameScreen';
 import GameOverScreen from './components/GameOverScreen';
-import BlackButton from './components/BlackButton';
+import IconButton from './components/IconButton';
 import Lobby from './components/Lobby';
 import ModeSelection from './components/ModeSelection';
 import MultiplayerGameOverScreen from './components/MultiplayerGameOverScreen';
@@ -68,12 +68,9 @@ function SoloGame({ onBack }) {
     <>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-emerald-800">Mot mélangé</h1>
-        <BlackButton
-          onClick={toggleSettings}
-          className="p-2 rounded-lg transition-colors hover:opacity-90"
-        >
-          <SettingsIcon className="w-6 h-6 text-white" />
-        </BlackButton>
+        <IconButton label="Ouvrir les paramètres" onClick={toggleSettings}>
+          <SettingsIcon className="w-6 h-6" />
+        </IconButton>
       </div>
 
       {state.showSettings && <Settings {...settingsProps} />}

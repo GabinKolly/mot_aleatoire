@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom';
 import { RotateCcw, Shuffle } from 'lucide-react';
-import BlackButton from './BlackButton';
 import Tile from './Tile';
 import { getTileVisualClasses } from './tileVisualState';
 
@@ -37,13 +36,13 @@ export default function GameScreen({
     <div className="space-y-6 max-md:flex max-md:flex-col max-md:flex-grow">
       {/* Abandonner — mobile only, placed right below stats */}
       <div className="text-center md:hidden">
-        <BlackButton
+        <button
           onClick={onGiveUp}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+          className="btn btn-danger btn-sm"
         >
           <RotateCcw className="w-4 h-4" />
           Abandonner
-        </BlackButton>
+        </button>
       </div>
 
       {/* Spacer — pushes tiles to bottom on mobile */}
@@ -98,22 +97,22 @@ export default function GameScreen({
       </div>
 
       <div className="text-center flex items-center justify-center gap-3">
-        <BlackButton
+        <button
           onClick={onReshuffle}
           disabled={interactionsDisabled}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-primary btn-sm"
         >
           <Shuffle className="w-4 h-4" />
           Mélanger
-        </BlackButton>
+        </button>
         {/* Abandonner — desktop only */}
-        <BlackButton
+        <button
           onClick={onGiveUp}
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+          className="btn btn-danger btn-sm hidden md:inline-flex"
         >
           <RotateCcw className="w-4 h-4" />
           Abandonner
-        </BlackButton>
+        </button>
       </div>
     </div>
   );

@@ -113,7 +113,7 @@ export default function MultiplayerGameOverScreen({
         <div>
           <button
             onClick={onBackToMenu}
-            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+            className="btn btn-link"
           >
             <ArrowLeft className="w-4 h-4" />
             Menu principal

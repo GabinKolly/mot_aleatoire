@@ -1,6 +1,5 @@
 import { Upload } from 'lucide-react';
 import { useRef } from 'react';
-import BlackButton from './BlackButton';
 import SettingsNumberField from './SettingsNumberField';
 
 export default function Settings({
@@ -130,12 +129,12 @@ export default function Settings({
 
       <div className="mb-6 pb-6 space-y-2">
         <div className="flex flex-col md:flex-row gap-2 md:items-center">
-          <BlackButton
+          <button
             onClick={onResetToStandardForCurrentList}
-            className="px-4 py-2 rounded-lg text-sm"
+            className="btn btn-secondary btn-sm"
           >
             Paramètres standards pour la liste choisie
-          </BlackButton>
+          </button>
         </div>
         {!isUsingStandardSettings && (
           <p className="text-xs text-amber-700 mt-2">
@@ -156,19 +155,8 @@ export default function Settings({
             <button
               key={key}
               onClick={() => onPresetChange(key)}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-              style={{
-                backgroundColor:
-                  selectedAddedListId === null && selectedPreset === key
-                    ? '#059669'
-                    : '#6b7280',
-                borderColor:
-                  selectedAddedListId === null && selectedPreset === key
-                    ? '#059669'
-                    : '#6b7280',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-              }}
+              aria-pressed={selectedAddedListId === null && selectedPreset === key}
+              className="btn btn-choice btn-sm w-full flex-col items-start text-left"
             >
               <span className="block">{list.name}</span>
               <span className="block text-xs opacity-90">
@@ -192,14 +180,8 @@ export default function Settings({
               >
                 <button
                   onClick={() => onSelectAddedList(list.id)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-                  style={{
-                    backgroundColor:
-                      selectedAddedListId === list.id ? '#059669' : '#6b7280',
-                    borderColor: selectedAddedListId === list.id ? '#059669' : '#6b7280',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                  }}
+                  aria-pressed={selectedAddedListId === list.id}
+                  className="btn btn-choice btn-sm"
                 >
                   Utiliser
                 </button>
@@ -222,7 +204,7 @@ export default function Settings({
                 />
                 <button
                   onClick={() => onRemoveAddedList(list.id)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-red-700 bg-black border border-black hover:opacity-90 transition-colors"
+                  className="btn btn-danger-outline btn-sm"
                 >
                   Supprimer
                 </button>
@@ -243,13 +225,13 @@ export default function Settings({
           onChange={onFileUpload}
           className="hidden"
         />
-        <BlackButton
+        <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="btn btn-secondary btn-sm"
         >
           <Upload className="w-4 h-4" />
           Importer un fichier .txt
-        </BlackButton>
+        </button>
         <p className="text-xs text-black mt-2">Format : un mot par ligne</p>
       </div>
 
@@ -259,11 +241,7 @@ export default function Settings({
             type="button"
             onClick={onClearCurrentListHighScore}
             disabled={!hasCurrentListHighScore}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border bg-transparent ${
-              hasCurrentListHighScore
-                ? 'border-black text-red-700 hover:bg-gray-100'
-                : 'border-gray-400 text-red-300 cursor-not-allowed'
-            }`}
+            className="btn btn-danger-outline btn-xs"
           >
             Effacer le meilleur score
           </button>

@@ -38,7 +38,7 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+button:not(.btn) {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -49,16 +49,192 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
+button:not(.btn):hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
+button:not(.btn):focus,
+button:not(.btn):focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-button {
+button:not(.btn) {
   background-color: #f9f9f9;
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-family: inherit;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease,
+      opacity 0.15s ease;
+    background-color: var(--btn-bg, #ffffff);
+    color: var(--btn-fg, #111827);
+    border-color: var(--btn-border, #d1d5db);
+  }
+
+  .btn:hover:not(:disabled) {
+    background-color: var(--btn-bg-hover, var(--btn-bg, #ffffff));
+    color: var(--btn-fg-hover, var(--btn-fg, #111827));
+    border-color: var(--btn-border-hover, var(--btn-border, #d1d5db));
+  }
+
+  .btn:focus,
+  .btn:focus-visible {
+    outline: none;
+  }
+
+  .btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.28);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn:disabled:hover {
+    background-color: var(--btn-bg, #ffffff);
+    color: var(--btn-fg, #111827);
+    border-color: var(--btn-border, #d1d5db);
+  }
+
+  .btn-xs {
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .btn-sm {
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-md {
+    padding: 0.65rem 1rem;
+    border-radius: 0.9rem;
+    font-size: 1rem;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.95rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
+  }
+
+  .btn-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border-radius: 0.75rem;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  .btn-primary {
+    --btn-bg: #059669;
+    --btn-bg-hover: #047857;
+    --btn-fg: #ffffff;
+    --btn-border: #059669;
+    --btn-border-hover: #047857;
+  }
+
+  .btn-secondary {
+    --btn-bg: #111827;
+    --btn-bg-hover: #030712;
+    --btn-fg: #ffffff;
+    --btn-border: #111827;
+    --btn-border-hover: #030712;
+  }
+
+  .btn-choice {
+    --btn-bg: #6b7280;
+    --btn-bg-hover: #4b5563;
+    --btn-fg: #ffffff;
+    --btn-border: #6b7280;
+    --btn-border-hover: #4b5563;
+    font-weight: 500;
+  }
+
+  .btn-choice[aria-pressed="true"],
+  .btn-choice.is-selected {
+    --btn-bg: #059669;
+    --btn-bg-hover: #047857;
+    --btn-border: #059669;
+    --btn-border-hover: #047857;
+  }
+
+  .btn-link {
+    --btn-bg: transparent;
+    --btn-bg-hover: transparent;
+    --btn-fg: #6b7280;
+    --btn-fg-hover: #374151;
+    --btn-border: transparent;
+    --btn-border-hover: transparent;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    gap: 0.25rem;
+    box-shadow: none;
+  }
+
+  .btn-link:focus-visible {
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.2);
+  }
+
+  .btn-danger {
+    --btn-bg: #fee2e2;
+    --btn-bg-hover: #fecaca;
+    --btn-fg: #b91c1c;
+    --btn-border: #fecaca;
+    --btn-border-hover: #fca5a5;
+  }
+
+  .btn-danger-outline {
+    --btn-bg: transparent;
+    --btn-bg-hover: #f3f4f6;
+    --btn-fg: #b91c1c;
+    --btn-border: #111827;
+    --btn-border-hover: #111827;
+    font-weight: 500;
+  }
+
+  .btn-danger-outline:disabled {
+    --btn-fg: #fca5a5;
+    --btn-border: #9ca3af;
+    --btn-bg: transparent;
+  }
+
+  .btn-danger-outline:disabled:hover {
+    --btn-bg-hover: transparent;
+  }
+
+  .btn-icon-neutral {
+    --btn-bg: #ffffff;
+    --btn-bg-hover: #f3f4f6;
+    --btn-fg: #4b5563;
+    --btn-border: #e5e7eb;
+    --btn-border-hover: #d1d5db;
+    box-shadow: none;
+  }
 }
 
 @keyframes pop-up-fade {

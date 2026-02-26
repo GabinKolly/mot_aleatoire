@@ -129,8 +129,8 @@ a {
 }
 
 .mm-title--menu {
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   font-size: clamp(3.8rem, 15vw, 5.5rem);
 }
 

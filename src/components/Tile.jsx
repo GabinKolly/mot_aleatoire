@@ -12,7 +12,6 @@ export default function Tile({
   revealType,
   interactionsDisabled,
   draggedIndex,
-  touchDragPosition,
   onDragStart,
   onDragOver,
   onDragEnd,
@@ -24,7 +23,7 @@ export default function Tile({
     <div
       data-tile-index={index}
       draggable={!interactionsDisabled}
-      onDragStart={() => onDragStart(index)}
+      onDragStart={(event) => onDragStart(event, index)}
       onDragOver={(event) => onDragOver(event, index)}
       onDragEnd={onDragEnd}
       onTouchStart={(event) => onTouchStart(event, index)}
@@ -35,13 +34,7 @@ export default function Tile({
         interactionsDisabled ? '' : 'mm-tile--interactive'
       } ${getTileVisualClasses(
         { isCorrect, isBonusWord, revealType }
-      )} ${
-        draggedIndex === index && touchDragPosition
-          ? 'opacity-0'
-          : draggedIndex === index
-            ? 'opacity-50'
-            : ''
-      }`}
+      )} ${draggedIndex === index ? 'opacity-0' : ''}`}
       style={{
         width: `${tileSize}px`,
         height: `${tileSize}px`,

@@ -1,7 +1,9 @@
 import dicoEasy from '../word-lists/dico_facile.txt?raw';
 import animauxWordsText from '../word-lists/animaux.txt?raw';
+import animauxFacileWordsText from '../word-lists/animaux_facile.txt?raw';
 import couleursWordsText from '../word-lists/couleurs.txt?raw';
 import emotionsWordsText from '../word-lists/emotions.txt?raw';
+import paysFacileWordsText from '../word-lists/pays_facile.txt?raw';
 import paysWordsText from '../word-lists/pays.txt?raw';
 import motsAvecWWordsText from '../word-lists/mots_avec_w.txt?raw';
 import dicoHard from '../word-lists/dico_difficile.txt?raw';
@@ -19,24 +21,31 @@ const wordsWithAccents = parseWordsText(dicoAvecAccents);
 const easyWords = parseWordsText(dicoEasy);
 const hardWords = parseWordsText(dicoHard);
 const animauxWords = parseWordsText(animauxWordsText);
+const animauxFacileWords = parseWordsText(animauxFacileWordsText);
 const couleursWords = parseWordsText(couleursWordsText);
 const emotionsWords = parseWordsText(emotionsWordsText);
+const paysFacileWords = parseWordsText(paysFacileWordsText);
 const paysWords = parseWordsText(paysWordsText);
 const motsAvecWWords = parseWordsText(motsAvecWWordsText);
 
 export const WORD_LISTS = {
   default: {
-    name: 'Dictionnaire facile',
+    name: 'Général (facile)',
     words: easyWords,
     bonusCheckWords: wordsWithAccents,
   },
   hard: {
-    name: 'Dictionnaire difficile',
+    name: 'Général (difficile)',
     words: hardWords,
     bonusCheckWords: hardBonusCheckWords,
   },
+  animauxFacile: {
+    name: 'Animaux (facile)',
+    words: animauxFacileWords,
+    bonusCheckWords: animauxFacileWords,
+  },
   animaux: {
-    name: 'Animaux',
+    name: 'Animaux (difficile)',
     words: animauxWords,
     bonusCheckWords: animauxWords,
   },
@@ -50,8 +59,13 @@ export const WORD_LISTS = {
     words: emotionsWords,
     bonusCheckWords: emotionsWords,
   },
+  paysFacile: {
+    name: 'Pays (facile)',
+    words: paysFacileWords,
+    bonusCheckWords: paysFacileWords,
+  },
   pays: {
-    name: 'Pays du monde',
+    name: 'Pays (difficile)',
     words: paysWords,
     bonusCheckWords: paysWords,
   },

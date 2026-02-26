@@ -3,6 +3,7 @@ acajou
 aigue-marine
 ambre
 anthracite
+arc-en-ciel
 argent
 azur
 basané
@@ -21,8 +22,11 @@ cramoisi
 crème
 cuivre
 cyan
+désaturé
 doré
+ébène
 écarlate
+émeraude
 fauve
 fluo
 fuchsia
@@ -39,6 +43,7 @@ magenta
 marron
 mauve
 moutarde
+multicolore
 nacré
 néon
 noir
@@ -53,6 +58,7 @@ pêche
 pourpre
 rose
 rouge
+rubis
 saumon
 sépia
 taupe

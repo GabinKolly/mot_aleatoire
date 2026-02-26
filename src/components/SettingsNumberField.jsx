@@ -5,7 +5,25 @@ export default function SettingsNumberField({
   max,
   onChange,
   onBlur,
+  variant = 'default',
 }) {
+  if (variant === 'mockup') {
+    return (
+      <div className="mm-form-field">
+        <label className="mm-form-field__label">{label}</label>
+        <input
+          type="number"
+          min={min}
+          max={max}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onBlur={onBlur}
+          className="mm-input"
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <label className="block text-sm text-black mb-1">{label}</label>

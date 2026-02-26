@@ -4,9 +4,10 @@ import Tile from './Tile';
 import { getTileVisualClasses } from './tileVisualState';
 
 const calculateTileSize = ({ screenWidth, numLetters, variant }) => {
+  const isMockupVariant = variant === 'solo-mockup' || variant === 'mobile-mockup';
   const maxTilePlusSpacing = Math.max(1, Math.floor(screenWidth / numLetters));
   const gapPx =
-    variant === 'solo-mockup'
+    isMockupVariant
       ? Math.max(
           1,
           Math.floor(
@@ -47,6 +48,7 @@ export default function GameScreen({
   primaryActionIcon: PrimaryActionIcon = Shuffle,
   onPrimaryAction,
   primaryActionDisabled,
+  bandEndAnchorKey = 'solo',
 }) {
   const { size: tileSize, gapPx, fontSize } = calculateTileSize({
     screenWidth,
@@ -86,7 +88,7 @@ export default function GameScreen({
         )
       : null;
 
-  if (variant === 'solo-mockup') {
+  if (variant === 'solo-mockup' || variant === 'mobile-mockup') {
     return (
       <div className="mm-solo-game">
         <div className="mm-solo-middle-slot mm-solo-middle-slot--tiles">
@@ -126,7 +128,7 @@ export default function GameScreen({
             onClick={soloPrimaryActionHandler}
             disabled={soloPrimaryActionDisabled}
             className="mm-pill-button mm-pill-button--beige mm-pill-button--title"
-            data-mm-band-end-anchor="solo"
+            data-mm-band-end-anchor={bandEndAnchorKey}
           >
             {PrimaryActionIcon && <PrimaryActionIcon className="w-5 h-5" />}
             {primaryActionLabel}

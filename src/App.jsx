@@ -13,7 +13,7 @@ import MultiplayerStatsPanel from './components/MultiplayerStatsPanel';
 import Settings from './components/Settings';
 import StartScreen from './components/StartScreen';
 import WaitingRoom from './components/WaitingRoom';
-import { parseWordsText } from './constants/wordLists';
+import { WORD_LISTS, parseWordsText } from './constants/wordLists';
 import { useDragAndDrop } from './hooks/useDragAndDrop';
 import { useGameState } from './hooks/useGameState';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
@@ -32,7 +32,11 @@ function MobileFooter() {
   return (
     <footer className="mm-footer" aria-label="Crédits">
       <span>© 2026</span>
-      <span>créé par Gabin Kolly</span>
+      <span className="mm-footer__credit">
+        créé par Gabin Kolly
+        <br />
+        visuel par Magali
+      </span>
     </footer>
   );
 }
@@ -52,6 +56,17 @@ function SoloStatsRow({ timeLeft, wordsFound, score }) {
         <div className="mm-stat-card__value">{score}</div>
         <div className="mm-stat-card__label">SCORE</div>
       </div>
+    </div>
+  );
+}
+
+function MultiplayerSummaryChip({ config, wordListKey }) {
+  const wordListName = WORD_LISTS[wordListKey]?.name || wordListKey;
+
+  return (
+    <div className="mm-summary-chip" aria-label="Résumé de la partie multijoueur">
+      <span>{`${config.gameTime} sec partie, ${config.wordTime} sec mot`}</span>
+      <span>{`${config.minWordLength} à ${config.maxWordLength} lettres, ${wordListName}`}</span>
     </div>
   );
 }
@@ -407,6 +422,9 @@ function MultiplayerGame({ onBack }) {
   const [screenWidth, setScreenWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 400
   );
+  const waitingZoneRef = useRef(null);
+  const playingZoneRef = useRef(null);
+  const resultsZoneRef = useRef(null);
 
   useEffect(() => {
     const updateWidth = () => setScreenWidth(window.innerWidth);
@@ -426,81 +444,165 @@ function MultiplayerGame({ onBack }) {
     onBack();
   }, [actions, onBack]);
 
+  const waitingBandStyle = useBandHighlightStyle(
+    waitingZoneRef,
+    '[data-mm-band-start-anchor="mp-waiting"]',
+    '[data-mm-band-end-anchor="mp-waiting"]',
+    [state.phase, state.players.length, state.isHost]
+  );
+  const playingBandStyle = useBandHighlightStyle(
+    playingZoneRef,
+    '[data-mm-band-start-anchor="mp"]',
+    '[data-mm-band-end-anchor="mp"]',
+    [state.phase, state.tiles.length, state.gameTimeLeft, state.wordTimeLeft, screenWidth]
+  );
+  const resultsBandStyle = useBandHighlightStyle(
+    resultsZoneRef,
+    '[data-mm-band-start-anchor="mp-results"]',
+    '[data-mm-band-end-anchor="mp-results"]',
+    [state.phase, state.players.length, state.wordHistory.length]
+  );
+
+  const isPlayingPhase = state.phase === 'playing';
+
   return (
-    <>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-emerald-800">Mot mélangé</h1>
-        <span className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">
-          2 joueurs
-        </span>
+    <div className="mm-page-shell">
+      <div className="mm-page-shell__content mm-solo-layout">
+        <div className="mm-mp-header">
+          <button
+            type="button"
+            onClick={handleBackToMenu}
+            className="mm-title-button"
+            aria-label="Retour au menu principal"
+          >
+            <span className="mm-title mm-title--solo">
+              <span>Mot</span>
+              <span>mélangé</span>
+            </span>
+          </button>
+        </div>
+
+        {isPlayingPhase && (
+          <MultiplayerSummaryChip config={state.config} wordListKey={state.wordListKey} />
+        )}
+
+        {state.phase === 'lobby' && (
+          <div className="mm-mp-phase-wrap">
+            <Lobby
+              onCreateRoom={actions.createRoom}
+              onJoinRoom={actions.joinRoom}
+              onBack={handleBackToMenu}
+              error={state.connectionError}
+            />
+          </div>
+        )}
+
+        {state.phase === 'waiting' && (
+          <section className="mm-band-zone mm-mp-waiting-zone" ref={waitingZoneRef}>
+            {waitingBandStyle && (
+              <div
+                className="mm-band-zone__fill"
+                aria-hidden="true"
+                style={waitingBandStyle}
+              />
+            )}
+            <div className="mm-mp-waiting-zone__content">
+              <WaitingRoom state={state} actions={actions} />
+            </div>
+          </section>
+        )}
+
+        {state.phase === 'playing' && (
+          <section className="mm-band-zone mm-solo-core mm-mp-core" ref={playingZoneRef}>
+            {playingBandStyle && (
+              <div
+                className="mm-band-zone__fill"
+                aria-hidden="true"
+                style={playingBandStyle}
+              />
+            )}
+            <div className="mm-solo-core__stack">
+              <div className="mm-solo-giveup-row">
+                <button
+                  type="button"
+                  onClick={actions.forfeit}
+                  className="mm-pill-button mm-pill-button--beige"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Abandonner
+                </button>
+              </div>
+
+              <MultiplayerStatsPanel
+                variant="mockup"
+                gameTimeLeft={state.gameTimeLeft}
+                wordTimeLeft={state.wordTimeLeft}
+                scores={state.scores}
+                wordsFound={state.wordsFound}
+                playerNumber={state.playerNumber}
+                players={state.players}
+              />
+
+              <GameScreen
+                variant="mobile-mockup"
+                showGiveUpButton={false}
+                bandEndAnchorKey="mp"
+                tiles={state.tiles}
+                isCorrect={state.isCorrect}
+                isBonusWord={false}
+                revealType={
+                  state.isCorrect
+                    ? state.wordSkipped
+                      ? 'timeout'
+                      : state.lastClaimedBy === state.playerNumber
+                        ? 'self'
+                        : 'opponent'
+                    : null
+                }
+                draggedIndex={dragAndDrop.draggedIndex}
+                touchDragPosition={dragAndDrop.touchDragPosition}
+                screenWidth={screenWidth}
+                onDragStart={dragAndDrop.handleDragStart}
+                onDragOver={dragAndDrop.handleDragOver}
+                onDragEnd={dragAndDrop.handleDragEnd}
+                onTouchStart={dragAndDrop.handleTouchStart}
+                onTouchMove={dragAndDrop.handleTouchMove}
+                onTouchEnd={dragAndDrop.handleTouchEnd}
+                onReshuffle={actions.reshuffleCurrentWord}
+                onGiveUp={actions.forfeit}
+              />
+            </div>
+          </section>
+        )}
+
+        {state.phase === 'gameOver' && (
+          <section className="mm-band-zone mm-mp-phase-wrap mm-mp-results-wrap" ref={resultsZoneRef}>
+            {resultsBandStyle && (
+              <div
+                className="mm-band-zone__fill"
+                aria-hidden="true"
+                style={resultsBandStyle}
+              />
+            )}
+            <div className="mm-mp-results-wrap__content">
+              <MultiplayerGameOverScreen
+                scores={state.scores}
+                wordsFound={state.wordsFound}
+                wordHistory={state.wordHistory}
+                winner={state.winner}
+                gameOverReason={state.gameOverReason}
+                forfeitedBy={state.forfeitedBy}
+                playerNumber={state.playerNumber}
+                players={state.players}
+                onPlayAgain={actions.playAgain}
+                onBackToMenu={handleBackToMenu}
+              />
+            </div>
+          </section>
+        )}
       </div>
-
-      {state.phase === 'lobby' && (
-        <Lobby
-          onCreateRoom={actions.createRoom}
-          onJoinRoom={actions.joinRoom}
-          onBack={handleBackToMenu}
-          error={state.connectionError}
-        />
-      )}
-
-      {state.phase === 'waiting' && (
-        <WaitingRoom state={state} actions={actions} />
-      )}
-
-      {state.phase === 'playing' && (
-        <>
-          <MultiplayerStatsPanel
-            gameTimeLeft={state.gameTimeLeft}
-            wordTimeLeft={state.wordTimeLeft}
-            scores={state.scores}
-            wordsFound={state.wordsFound}
-            playerNumber={state.playerNumber}
-            players={state.players}
-          />
-          <GameScreen
-            tiles={state.tiles}
-            isCorrect={state.isCorrect}
-            isBonusWord={false}
-            revealType={
-              state.isCorrect
-                ? state.wordSkipped
-                  ? 'timeout'
-                  : state.lastClaimedBy === state.playerNumber
-                    ? 'self'
-                    : 'opponent'
-                : null
-            }
-            draggedIndex={dragAndDrop.draggedIndex}
-            touchDragPosition={dragAndDrop.touchDragPosition}
-            screenWidth={screenWidth}
-            onDragStart={dragAndDrop.handleDragStart}
-            onDragOver={dragAndDrop.handleDragOver}
-            onDragEnd={dragAndDrop.handleDragEnd}
-            onTouchStart={dragAndDrop.handleTouchStart}
-            onTouchMove={dragAndDrop.handleTouchMove}
-            onTouchEnd={dragAndDrop.handleTouchEnd}
-            onReshuffle={actions.reshuffleCurrentWord}
-            onGiveUp={actions.forfeit}
-          />
-        </>
-      )}
-
-      {state.phase === 'gameOver' && (
-        <MultiplayerGameOverScreen
-          scores={state.scores}
-          wordsFound={state.wordsFound}
-          wordHistory={state.wordHistory}
-          winner={state.winner}
-          gameOverReason={state.gameOverReason}
-          forfeitedBy={state.forfeitedBy}
-          playerNumber={state.playerNumber}
-          players={state.players}
-          onPlayAgain={actions.playAgain}
-          onBackToMenu={handleBackToMenu}
-        />
-      )}
-    </>
+      <MobileFooter />
+    </div>
   );
 }
 
@@ -508,15 +610,7 @@ export default function App() {
   const [mode, setMode] = useState(null);
 
   if (mode === 'multiplayer') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
-        <div className="w-full">
-          <div className="bg-white rounded-b-xl shadow-xl p-6 mb-6 max-md:min-h-[100dvh] max-md:mb-0 max-md:rounded-none max-md:flex max-md:flex-col">
-            <MultiplayerGame onBack={() => setMode(null)} />
-          </div>
-        </div>
-      </div>
-    );
+    return <MultiplayerGame onBack={() => setMode(null)} />;
   }
 
   if (mode === 'solo') {

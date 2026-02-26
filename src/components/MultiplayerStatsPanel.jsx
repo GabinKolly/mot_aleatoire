@@ -1,5 +1,18 @@
 import { useValuePopup } from '../hooks/useValuePopup';
 
+function formatClock(seconds) {
+  const safeSeconds = Math.max(0, seconds);
+  const minutes = Math.floor(safeSeconds / 60);
+  const remaining = (safeSeconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${remaining}`;
+}
+
+function truncateLabel(value, fallback) {
+  const text = (value || fallback || '').trim();
+  if (text.length <= 10) return text;
+  return `${text.slice(0, 9)}…`;
+}
+
 export default function MultiplayerStatsPanel({
   gameTimeLeft,
   wordTimeLeft,
@@ -7,6 +20,7 @@ export default function MultiplayerStatsPanel({
   wordsFound,
   playerNumber,
   players,
+  variant = 'default',
 }) {
   const opponent = players.find((p) => p.number !== playerNumber);
   const self = players.find((p) => p.number === playerNumber);
@@ -18,6 +32,46 @@ export default function MultiplayerStatsPanel({
 
   const myScoreDelta = useValuePopup(myScore);
   const opponentScoreDelta = useValuePopup(opponentScore);
+
+  if (variant === 'mockup') {
+    return (
+      <div className="mm-mp-stats" data-mm-band-start-anchor="mp">
+        <div className="mm-stat-card mm-stat-card--green mm-mp-stat-card">
+          <div className="mm-stat-card__value">{formatClock(gameTimeLeft)}</div>
+          <div className="mm-stat-card__label">Temps restant</div>
+        </div>
+
+        <div className="mm-stat-card mm-stat-card--yellow mm-mp-stat-card">
+          <div className="mm-stat-card__value">{wordTimeLeft}</div>
+          <div className="mm-stat-card__label">Avant prochain mot</div>
+        </div>
+
+        <div className="mm-stat-card mm-stat-card--blue mm-mp-stat-card mm-mp-stat-card--score">
+          {myScoreDelta !== null && (
+            <span className="mm-mp-stat-card__delta animate-pop-up">+{myScoreDelta}</span>
+          )}
+          <div className="mm-stat-card__value">{myScore}</div>
+          <div className="mm-stat-card__label">{truncateLabel(self?.name, 'Vous')}</div>
+          <div className="mm-mp-stat-card__sub">
+            {myWordsFound} mots
+          </div>
+        </div>
+
+        <div className="mm-stat-card mm-stat-card--red mm-mp-stat-card mm-mp-stat-card--score">
+          {opponentScoreDelta !== null && (
+            <span className="mm-mp-stat-card__delta animate-pop-up">+{opponentScoreDelta}</span>
+          )}
+          <div className="mm-stat-card__value">{opponentScore}</div>
+          <div className="mm-stat-card__label">
+            {truncateLabel(opponent?.name, 'Adversaire')}
+          </div>
+          <div className="mm-mp-stat-card__sub">
+            {opponentWordsFound} mots
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2 mb-6">

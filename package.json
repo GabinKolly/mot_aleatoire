@@ -9,7 +9,10 @@
     "deploy:partykit": "npx partykit deploy",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepare": "simple-git-hooks"
   },
   "dependencies": {
     "@fontsource/quicksand": "^5.2.10",
@@ -29,14 +32,20 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jsdom": "^28.1.0",
     "partykit": "^0.0.115",
     "postcss": "^8.5.6",
+    "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.0-beta.13"
+    "vite": "^8.0.0-beta.13",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "vite": "^8.0.0-beta.13"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx eslint . --max-warnings 0 && npx tsc --noEmit"
   }
 }

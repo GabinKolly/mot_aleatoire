@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { useEffect, useRef } from 'react';
 import { RotateCcw, Shuffle } from 'lucide-react';
 import Tile from './Tile';
 import { getTileVisualClasses } from './tileVisualState';
@@ -50,6 +51,7 @@ export default function GameScreen({
   primaryActionDisabled,
   bandEndAnchorKey = 'solo',
 }) {
+  const tilesTouchZoneRef = useRef(null);
   const { size: tileSize, gapPx, fontSize } = calculateTileSize({
     screenWidth,
     numLetters: tiles.length || 1,
@@ -60,6 +62,33 @@ export default function GameScreen({
   const interactionsDisabled = isCorrect;
   const soloPrimaryActionHandler = onPrimaryAction ?? onReshuffle;
   const soloPrimaryActionDisabled = primaryActionDisabled ?? interactionsDisabled;
+
+  useEffect(() => {
+    const isMockupVariant = variant === 'solo-mockup' || variant === 'mobile-mockup';
+    if (!isMockupVariant) {
+      return undefined;
+    }
+
+    const zone = tilesTouchZoneRef.current;
+    if (!zone) {
+      return undefined;
+    }
+
+    const preventZoneScroll = (event) => {
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+    };
+
+    zone.addEventListener('touchstart', preventZoneScroll, { passive: false });
+    zone.addEventListener('touchmove', preventZoneScroll, { passive: false });
+
+    return () => {
+      zone.removeEventListener('touchstart', preventZoneScroll);
+      zone.removeEventListener('touchmove', preventZoneScroll);
+    };
+  }, [variant]);
+
   const dragPreview =
     touchDragPosition &&
     draggedIndex !== null &&
@@ -93,30 +122,32 @@ export default function GameScreen({
       <div className="mm-solo-game">
         <div className="mm-solo-middle-slot mm-solo-middle-slot--tiles">
           <div className="mm-tiles-shell">
-            <div className="mm-tiles-row" style={{ gap: `${gapPx}px` }}>
-              {tiles.map((tile, index) => (
-                <Tile
-                  key={tile.id}
-                  tile={tile}
-                  index={index}
-                  tileSize={tileSize}
-                  fontSize={fontSize}
-                  cornerRadius={tileRadius}
-                  borderWidth={tileBorderWidth}
-                  isCorrect={isCorrect}
-                  isBonusWord={isBonusWord}
-                  revealType={revealType}
-                  interactionsDisabled={interactionsDisabled}
-                  draggedIndex={draggedIndex}
-                  touchDragPosition={touchDragPosition}
-                  onDragStart={onDragStart}
-                  onDragOver={onDragOver}
-                  onDragEnd={onDragEnd}
-                  onTouchStart={onTouchStart}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={onTouchEnd}
-                />
-              ))}
+            <div className="mm-tiles-touch-zone" ref={tilesTouchZoneRef}>
+              <div className="mm-tiles-row" style={{ gap: `${gapPx}px` }}>
+                {tiles.map((tile, index) => (
+                  <Tile
+                    key={tile.id}
+                    tile={tile}
+                    index={index}
+                    tileSize={tileSize}
+                    fontSize={fontSize}
+                    cornerRadius={tileRadius}
+                    borderWidth={tileBorderWidth}
+                    isCorrect={isCorrect}
+                    isBonusWord={isBonusWord}
+                    revealType={revealType}
+                    interactionsDisabled={interactionsDisabled}
+                    draggedIndex={draggedIndex}
+                    touchDragPosition={touchDragPosition}
+                    onDragStart={onDragStart}
+                    onDragOver={onDragOver}
+                    onDragEnd={onDragEnd}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                  />
+                ))}
+              </div>
             </div>
             {dragPreview}
           </div>

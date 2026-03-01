@@ -333,7 +333,7 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
 
         {state.showSettings && (
           <div className="mm-settings-panel-slot">
-            <Settings {...settingsProps} />
+            <Settings {...settingsProps} onClose={toggleSettings} />
           </div>
         )}
 

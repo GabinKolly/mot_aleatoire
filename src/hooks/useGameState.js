@@ -173,11 +173,17 @@ function reducer(state, action) {
     case 'TOGGLE_SETTINGS':
       return { ...state, showSettings: !state.showSettings };
     case 'SET_START_TIME':
-      return { ...state, startTime: action.payload };
+      return buildRoundResetState(state, {
+        startTime: action.payload,
+      });
     case 'SET_BONUS_TIME':
-      return { ...state, bonusTime: action.payload };
+      return buildRoundResetState(state, {
+        bonusTime: action.payload,
+      });
     case 'SET_ALT_BONUS_TIME':
-      return { ...state, alternativeWordBonusTime: action.payload };
+      return buildRoundResetState(state, {
+        alternativeWordBonusTime: action.payload,
+      });
     case 'CLEAR_HIGH_SCORE_FOR_CURRENT_LIST': {
       const listKey = buildListScoreKey({
         selectedPreset: state.selectedPreset,

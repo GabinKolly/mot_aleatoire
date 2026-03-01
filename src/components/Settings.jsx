@@ -36,6 +36,7 @@ export default function Settings({
   maxWordLengthInput,
   onMaxWordLengthChange,
   onMaxWordLengthBlur,
+  onClose,
 }) {
   const fileInputRef = useRef(null);
   const hasCurrentListHighScore = Number.isInteger(currentListHighScore);
@@ -251,6 +252,16 @@ export default function Settings({
             </span>
           )}
         </div>
+      </div>
+
+      <div className="pt-4 mt-4 border-t border-gray-200">
+        <button
+          type="button"
+          onClick={onClose}
+          className="btn btn-secondary btn-sm"
+        >
+          Fermer les paramètres
+        </button>
       </div>
     </div>
   );

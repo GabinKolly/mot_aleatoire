@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { getSavedPlayerName } from '../hooks/useMultiplayerGame';
+import { getSavedPlayerName } from '../utils/playerIdentity';
 import { useBandHighlightStyle } from '../hooks/useBandHighlightStyle';
 import { bandStartSelector, bandEndSelector } from '../constants/dom';
 

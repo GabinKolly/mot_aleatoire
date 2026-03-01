@@ -42,17 +42,7 @@ export default function MultiplayerStatsPanel({
 
     return (
       <div className="mm-mp-stats" data-mm-band-start-anchor="mp">
-        <div className="mm-stat-card mm-stat-card--green mm-mp-stat-card">
-          <div className="mm-stat-card__value" style={getStatValueSizingStyle(wordTimeText)}>
-            {wordTimeText}
-          </div>
-          <div className="mm-mp-stat-card__divider" aria-hidden="true" />
-          <div className="mm-stat-card__value" style={getStatValueSizingStyle(gameTimeText)}>
-            {gameTimeText}
-          </div>
-        </div>
-
-        <div className="mm-stat-card mm-stat-card--yellow mm-mp-stat-card mm-mp-stat-card--score">
+        <div className="mm-stat-card mm-stat-card--green mm-mp-stat-card mm-mp-stat-card--score">
           {myScoreDelta !== null && (
             <span className="mm-mp-stat-card__delta animate-pop-up">+{myScoreDelta}</span>
           )}
@@ -60,6 +50,16 @@ export default function MultiplayerStatsPanel({
             {myScoreText}
           </div>
           <div className="mm-stat-card__label">{truncateLabel(self?.name, 'Vous')}</div>
+        </div>
+
+        <div className="mm-stat-card mm-stat-card--yellow mm-mp-stat-card">
+          <div className="mm-stat-card__value" style={getStatValueSizingStyle(wordTimeText)}>
+            {wordTimeText}
+          </div>
+          <div className="mm-mp-stat-card__divider" aria-hidden="true" />
+          <div className="mm-stat-card__value" style={getStatValueSizingStyle(gameTimeText)}>
+            {gameTimeText}
+          </div>
         </div>
 
         <div className="mm-stat-card mm-stat-card--red mm-mp-stat-card mm-mp-stat-card--score">

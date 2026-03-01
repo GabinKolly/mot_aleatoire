@@ -429,6 +429,7 @@ a {
   .mm-solo-stats .mm-stat-card__label {
     margin-top: 0.28rem;
   }
+
 }
 
 .mm-stat-card--green {
@@ -495,6 +496,15 @@ a {
   --mm-stat-value-max-size: 1.12rem;
   --mm-stat-value-min-size: 0.78rem;
   --mm-stat-value-shrink-step: 0.11rem;
+}
+
+@media (max-width: 767px) {
+  .mm-mp-stat-card .mm-stat-card__value {
+    --mm-stat-value-max-size: 1.6rem;
+    --mm-stat-value-min-size: 1.08rem;
+    --mm-stat-value-shrink-step: 0.2rem;
+    line-height: 0.92;
+  }
 }
 
 .mm-mp-stat-card .mm-stat-card__label {
@@ -1199,6 +1209,12 @@ a {
     --mm-stat-value-max-size: min(2.25rem, 22cqi);
     --mm-stat-value-min-size: 1.1rem;
     --mm-stat-value-shrink-step: 0.2rem;
+  }
+
+  .mm-mp-stat-card .mm-stat-card__value {
+    --mm-stat-value-max-size: 1.46rem;
+    --mm-stat-value-min-size: 1.01rem;
+    --mm-stat-value-shrink-step: 0.143rem;
   }
 
   .mm-stat-card__label {

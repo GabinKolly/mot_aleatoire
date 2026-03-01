@@ -1,5 +1,5 @@
 {
   "name": "mot-aleatoire",
-  "main": "party/server.js",
+  "main": "party/server.ts",
   "compatibilityDate": "2025-01-01"
 }

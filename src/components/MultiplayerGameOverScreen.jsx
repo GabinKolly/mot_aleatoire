@@ -70,7 +70,11 @@ export default function MultiplayerGameOverScreen({
       </div>
 
       <div className="mm-mp-results__scores" data-mm-band-start-anchor="mp-results">
-        <div className={`mm-mp-results-score-card ${isWinner ? 'is-emphasis-self' : ''}`}>
+        <div
+          className={`mm-mp-results-score-card mm-mp-results-score-card--self ${
+            isWinner ? 'is-emphasis-self' : ''
+          }`}
+        >
           <div className="mm-mp-results-score-card__name">{self?.name || 'Vous'}</div>
           <div className="mm-mp-results-score-card__value">{myScore}</div>
           <div className="mm-mp-results-score-card__meta">{myWordsFound} mots trouvés</div>

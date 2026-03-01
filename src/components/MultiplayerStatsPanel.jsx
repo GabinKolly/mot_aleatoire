@@ -36,7 +36,7 @@ export default function MultiplayerStatsPanel({
 
   if (variant === 'mockup') {
     const gameTimeText = formatClock(gameTimeLeft);
-    const wordTimeText = formatClock(wordTimeLeft);
+    const wordTimeText = `${Math.max(0, wordTimeLeft)} sec`;
     const myScoreText = `${myScore}`;
     const opponentScoreText = `${opponentScore}`;
 
@@ -53,12 +53,15 @@ export default function MultiplayerStatsPanel({
         </div>
 
         <div className="mm-stat-card mm-stat-card--yellow mm-mp-stat-card">
-          <div className="mm-stat-card__value" style={getStatValueSizingStyle(wordTimeText)}>
-            {wordTimeText}
-          </div>
-          <div className="mm-mp-stat-card__divider" aria-hidden="true" />
           <div className="mm-stat-card__value" style={getStatValueSizingStyle(gameTimeText)}>
             {gameTimeText}
+          </div>
+          <div className="mm-mp-stat-card__divider" aria-hidden="true" />
+          <div
+            className="mm-stat-card__value mm-mp-stat-card__value--word-time"
+            style={getStatValueSizingStyle(wordTimeText)}
+          >
+            {wordTimeText}
           </div>
         </div>
 

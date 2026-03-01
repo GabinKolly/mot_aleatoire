@@ -46,6 +46,7 @@
     "vite": "^8.0.0-beta.13"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx eslint . --max-warnings 0 && npx tsc --noEmit"
+    "pre-commit": "npx eslint . --max-warnings 0 && npx tsc --noEmit",
+    "pre-push": "npx vitest run"
   }
 }

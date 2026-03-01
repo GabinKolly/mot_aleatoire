@@ -62,12 +62,14 @@ type WordFoundMessage = {
 
 type ForfeitMessage = { type: 'FORFEIT' };
 type PlayAgainMessage = { type: 'PLAY_AGAIN' };
+type NoMoreWordsMessage = { type: 'NO_MORE_WORDS' };
 
 type IncomingMessage =
   | JoinMessage
   | UpdateConfigMessage
   | StartGameMessage
   | WordFoundMessage
+  | NoMoreWordsMessage
   | ForfeitMessage
   | PlayAgainMessage
   | ({ type: string } & JsonRecord);
@@ -566,6 +568,11 @@ export default class GameRoom implements Party.Server {
         }, WORD_TRANSITION_MS);
         break;
       }
+
+      case 'NO_MORE_WORDS':
+        if (this.status !== 'playing') break;
+        this.endGame({ endReason: 'score' });
+        break;
 
       case 'FORFEIT':
         if (this.status !== 'playing') break;

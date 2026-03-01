@@ -44,6 +44,7 @@ type ClientMessage =
   | { type: 'UPDATE_CONFIG'; config: MultiplayerConfig; wordListKey: string }
   | { type: 'START_GAME' }
   | { type: 'WORD_FOUND'; wordIndex: number; wordLength: number }
+  | { type: 'NO_MORE_WORDS' }
   | { type: 'FORFEIT' }
   | { type: 'PLAY_AGAIN' };
 
@@ -433,6 +434,7 @@ export function useMultiplayerGame() {
   const playerNameRef = useRef('');
   const wordFoundSentRef = useRef<Set<number>>(new Set());
   const bonusAwardedWordsRef = useRef<Set<string>>(new Set());
+  const noMoreWordsSentRef = useRef(false);
 
   const cleanup = useCallback((): void => {
     if (socketRef.current) {
@@ -441,6 +443,7 @@ export function useMultiplayerGame() {
     }
     wordFoundSentRef.current = new Set();
     bonusAwardedWordsRef.current = new Set();
+    noMoreWordsSentRef.current = false;
   }, []);
 
   const activeWordList = useMemo(
@@ -525,6 +528,7 @@ export function useMultiplayerGame() {
           case 'GAME_STARTED':
             wordFoundSentRef.current = new Set();
             bonusAwardedWordsRef.current = new Set();
+            noMoreWordsSentRef.current = false;
             dispatch({
               type: 'GAME_STARTED',
               payload: data as unknown as GameStartedPayload,
@@ -679,6 +683,23 @@ export function useMultiplayerGame() {
       payload: buildShuffledTiles(state.currentWord),
     });
   }, [state.currentWord, state.isCorrect, state.isPlaying]);
+
+  useEffect(() => {
+    if (!state.isPlaying) {
+      return;
+    }
+
+    if (state.currentWordIndex < state.wordSequence.length) {
+      return;
+    }
+
+    if (noMoreWordsSentRef.current) {
+      return;
+    }
+
+    noMoreWordsSentRef.current = true;
+    send({ type: 'NO_MORE_WORDS' });
+  }, [state.isPlaying, state.currentWordIndex, state.wordSequence.length, send]);
 
   const forfeit = useCallback((): void => {
     send({ type: 'FORFEIT' });

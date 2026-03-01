@@ -91,6 +91,7 @@ const initialState = {
   currentWord: '',
   tiles: [],
   isCorrect: false,
+  isBonusWord: false,
   gameTimeLeft: 0,
   wordTimeLeft: 0,
   scores: {},
@@ -158,6 +159,7 @@ function reducer(state, action) {
         isPlaying: false,
         gameOver: nextPhase === 'waiting' ? false : state.gameOver,
         isCorrect: nextPhase === 'waiting' ? false : state.isCorrect,
+        isBonusWord: false,
         tiles: nextPhase === 'waiting' ? [] : state.tiles,
         wordSkipped: false,
         wordHistory: nextPhase === 'waiting' ? [] : state.wordHistory,
@@ -189,6 +191,7 @@ function reducer(state, action) {
         currentWord: first ? first.word : '',
         tiles: first ? first.tiles : [],
         isCorrect: false,
+        isBonusWord: false,
         gameTimeLeft: config.gameTime,
         wordTimeLeft: config.wordTime,
         config,
@@ -217,6 +220,7 @@ function reducer(state, action) {
       return {
         ...state,
         isCorrect: true,
+        isBonusWord: false,
         lastClaimedBy: state.playerNumber,
         wordSkipped: false,
         tiles: state.currentWord
@@ -239,6 +243,7 @@ function reducer(state, action) {
       return {
         ...state,
         isCorrect: true,
+        isBonusWord: false,
         scores: newScores,
         wordsFound: newWordsFound,
         lastClaimedBy: playerNumber,
@@ -260,6 +265,7 @@ function reducer(state, action) {
       return {
         ...state,
         isCorrect: true,
+        isBonusWord: false,
         wordSkipped: true,
         wordHistory: nextWordHistory,
         tiles: current.word
@@ -287,6 +293,7 @@ function reducer(state, action) {
       return {
         ...state,
         isCorrect: false,
+        isBonusWord: false,
         currentWordIndex: wordIndex,
         currentWord: next.word,
         tiles: next.tiles,
@@ -304,12 +311,25 @@ function reducer(state, action) {
         wordTimeLeft: action.payload.wordTimeLeft,
       };
 
+    case 'AWARD_ALT_BONUS':
+      return {
+        ...state,
+        isBonusWord: true,
+      };
+
+    case 'CLEAR_ALT_BONUS':
+      return {
+        ...state,
+        isBonusWord: false,
+      };
+
     case 'REVEAL_FINAL_WORD': {
       const current = state.wordSequence[state.currentWordIndex];
       if (!current || state.isCorrect) return state;
       return {
         ...state,
         isCorrect: true,
+        isBonusWord: false,
         wordSkipped: true,
         tiles: current.word
           .split('')
@@ -329,6 +349,7 @@ function reducer(state, action) {
         phase: 'gameOver',
         isPlaying: false,
         gameOver: true,
+        isBonusWord: false,
         winner: action.payload.winner,
         gameOverReason: action.payload.endReason ?? 'score',
         forfeitedBy: action.payload.forfeitedBy ?? null,
@@ -365,6 +386,7 @@ export function useMultiplayerGame() {
   const playerIdRef = useRef(getOrCreatePlayerId());
   const playerNameRef = useRef('');
   const wordFoundSentRef = useRef(new Set());
+  const bonusAwardedWordsRef = useRef(new Set());
 
   const cleanup = useCallback(() => {
     if (socketRef.current) {
@@ -372,7 +394,28 @@ export function useMultiplayerGame() {
       socketRef.current = null;
     }
     wordFoundSentRef.current = new Set();
+    bonusAwardedWordsRef.current = new Set();
   }, []);
+
+  const activeWordList = useMemo(
+    () => WORD_LISTS[state.wordListKey] || WORD_LISTS.default,
+    [state.wordListKey]
+  );
+  const filteredWords = useMemo(
+    () => {
+      const minLength = state.config.minWordLength ?? DEFAULT_CONFIG.minWordLength;
+      const maxLength = Math.max(state.config.maxWordLength ?? DEFAULT_CONFIG.maxWordLength, minLength);
+      return activeWordList.words.filter(
+        (word) => word.length >= minLength && word.length <= maxLength
+      );
+    },
+    [activeWordList.words, state.config.maxWordLength, state.config.minWordLength]
+  );
+  const filteredWordsSet = useMemo(() => new Set(filteredWords), [filteredWords]);
+  const bonusCheckWordsSet = useMemo(
+    () => new Set(activeWordList.bonusCheckWords || activeWordList.words),
+    [activeWordList.bonusCheckWords, activeWordList.words]
+  );
 
   useEffect(() => {
     return cleanup;
@@ -420,6 +463,7 @@ export function useMultiplayerGame() {
 
           case 'GAME_STARTED':
             wordFoundSentRef.current = new Set();
+            bonusAwardedWordsRef.current = new Set();
             dispatch({ type: 'GAME_STARTED', payload: data });
             break;
 
@@ -432,6 +476,7 @@ export function useMultiplayerGame() {
             break;
 
           case 'NEXT_WORD':
+            bonusAwardedWordsRef.current = new Set();
             dispatch({ type: 'NEXT_WORD', payload: data });
             break;
 
@@ -522,8 +567,29 @@ export function useMultiplayerGame() {
         wordIndex: state.currentWordIndex,
         wordLength: state.currentWord.length,
       });
+      return;
     }
-  }, [state.isPlaying, state.isCorrect, state.tiles, state.currentWord, state.currentWordIndex, send]);
+
+    if (
+      state.currentWord.length > 0 &&
+      currentTileWord !== state.currentWord &&
+      (bonusCheckWordsSet.has(currentTileWord) || filteredWordsSet.has(currentTileWord)) &&
+      !bonusAwardedWordsRef.current.has(currentTileWord)
+    ) {
+      bonusAwardedWordsRef.current.add(currentTileWord);
+      dispatch({ type: 'AWARD_ALT_BONUS' });
+      setTimeout(() => dispatch({ type: 'CLEAR_ALT_BONUS' }), 450);
+    }
+  }, [
+    state.isPlaying,
+    state.isCorrect,
+    state.tiles,
+    state.currentWord,
+    state.currentWordIndex,
+    bonusCheckWordsSet,
+    filteredWordsSet,
+    send,
+  ]);
 
   const reshuffleCurrentWord = useCallback(() => {
     if (!state.isPlaying || state.isCorrect || state.currentWord.length < 2) return;

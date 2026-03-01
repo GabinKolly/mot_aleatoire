@@ -576,7 +576,7 @@ function MultiplayerGame({ onBack }) {
                 bandEndAnchorKey="mp"
                 tiles={state.tiles}
                 isCorrect={state.isCorrect}
-                isBonusWord={false}
+                isBonusWord={state.isBonusWord}
                 revealType={
                   state.isCorrect
                     ? state.wordSkipped

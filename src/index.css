@@ -480,7 +480,7 @@ a {
 
 .mm-mp-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
@@ -503,6 +503,13 @@ a {
   line-height: 1.02;
   white-space: normal;
   min-height: 1.08rem;
+}
+
+.mm-mp-stat-card__divider {
+  width: 72%;
+  height: 1px;
+  margin: 0.28rem 0;
+  background: rgba(47, 47, 47, 0.36);
 }
 
 .mm-mp-stat-card__sub {
@@ -799,6 +806,13 @@ a {
   gap: 0.25rem;
   font-weight: 600;
   font-size: 0.78rem;
+}
+
+.mm-waiting-config-footnote {
+  margin-top: 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(47, 47, 47, 0.72);
 }
 
 .mm-waiting-actions {

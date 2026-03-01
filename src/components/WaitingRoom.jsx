@@ -4,6 +4,7 @@ import { WORD_LISTS } from '../constants/wordLists';
 import IconButton from './IconButton';
 import SettingsNumberField from './SettingsNumberField';
 import { useClampedInput } from '../hooks/useClampedInput';
+import { countWordsMatchingLength } from '../utils/wordPicking';
 
 async function copyText(text) {
   if (!text) return false;
@@ -54,6 +55,31 @@ export default function WaitingRoom({ state, actions }) {
   const minWordLength = useClampedInput({ initialValue: config.minWordLength, min: 2, max: 15 });
   const maxWordLength = useClampedInput({ initialValue: config.maxWordLength, min: 2, max: 15 });
   const [selectedPreset, setSelectedPreset] = useState(wordListKey);
+  const selectedWordList =
+    WORD_LISTS[selectedPreset] || WORD_LISTS[wordListKey] || WORD_LISTS.default;
+  const selectedMinWordLength = minWordLength.committedValue;
+  const selectedMaxWordLength = Math.max(
+    maxWordLength.committedValue,
+    selectedMinWordLength
+  );
+  const selectedWordCount = countWordsMatchingLength(
+    selectedWordList.words,
+    selectedMinWordLength,
+    selectedMaxWordLength
+  );
+  const readonlyWordListKey = config.wordListKey || wordListKey || 'default';
+  const readonlyWordList = WORD_LISTS[readonlyWordListKey] || WORD_LISTS.default;
+  const readonlyMinWordLength = Number.isInteger(config.minWordLength)
+    ? config.minWordLength
+    : 2;
+  const readonlyMaxWordLength = Number.isInteger(config.maxWordLength)
+    ? Math.max(config.maxWordLength, readonlyMinWordLength)
+    : readonlyMinWordLength;
+  const readonlyWordCount = countWordsMatchingLength(
+    readonlyWordList.words,
+    readonlyMinWordLength,
+    readonlyMaxWordLength
+  );
 
   useEffect(() => {
     if (!isHost) return;
@@ -212,6 +238,10 @@ export default function WaitingRoom({ state, actions }) {
               ))}
             </div>
           </div>
+
+          <p className="mm-waiting-config-footnote">
+            {`Nombre de mots : ${selectedWordCount}`}
+          </p>
         </section>
       ) : (
         <section className="mm-mp-card">
@@ -227,6 +257,7 @@ export default function WaitingRoom({ state, actions }) {
                 WORD_LISTS[wordListKey]?.name ||
                 wordListKey}
             </p>
+            <p>{`Nombre de mots : ${readonlyWordCount}`}</p>
           </div>
         </section>
       )}

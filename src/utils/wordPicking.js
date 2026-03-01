@@ -99,6 +99,20 @@ export const pickWordFromList = (availableWords, allFilteredWords, rng = Math.ra
   return availableWords[Math.floor(rng() * availableWords.length)];
 };
 
+export const countWordsMatchingLength = (words, minLength, maxLength) => {
+  if (!Array.isArray(words) || words.length === 0) {
+    return 0;
+  }
+
+  return words.reduce((count, word) => {
+    const length = word.length;
+    if (length >= minLength && length <= maxLength) {
+      return count + 1;
+    }
+    return count;
+  }, 0);
+};
+
 /**
  * Generate a deterministic word sequence from a seed and word list.
  * Returns an array of { word, tiles } entries.

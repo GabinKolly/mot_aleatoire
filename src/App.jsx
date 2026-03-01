@@ -19,6 +19,7 @@ import { useGameState } from './hooks/useGameState';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSettingsBindings } from './hooks/useSettingsBindings';
 import { getStatValueSizingStyle } from './utils/statValueSizing';
+import { countWordsMatchingLength } from './utils/wordPicking';
 
 const NOOP = () => {};
 
@@ -72,12 +73,24 @@ function SoloStatsRow({ timeLeft, wordsFound, score }) {
 }
 
 function MultiplayerSummaryChip({ config, wordListKey }) {
-  const wordListName = WORD_LISTS[wordListKey]?.name || wordListKey;
+  const activeWordListKey = config.wordListKey || wordListKey || 'default';
+  const activeWordList = WORD_LISTS[activeWordListKey] || WORD_LISTS.default;
+  const wordListName = activeWordList.name || activeWordListKey;
+  const minWordLength = Number.isInteger(config.minWordLength) ? config.minWordLength : 2;
+  const maxWordLength = Number.isInteger(config.maxWordLength)
+    ? Math.max(config.maxWordLength, minWordLength)
+    : minWordLength;
+  const wordCount = countWordsMatchingLength(
+    activeWordList.words,
+    minWordLength,
+    maxWordLength
+  );
 
   return (
     <div className="mm-summary-chip" aria-label="Résumé de la partie multijoueur">
-      <span>{`${config.gameTime} sec partie, ${config.wordTime} sec mot`}</span>
-      <span>{`${config.minWordLength} à ${config.maxWordLength} lettres, ${wordListName}`}</span>
+      <span>{`${config.gameTime} s, ${config.wordTime} s par mot`}</span>
+      <span>{`${config.minWordLength} à ${config.maxWordLength} lettres`}</span>
+      <span>{`${wordListName} • ${wordCount} mots`}</span>
     </div>
   );
 }

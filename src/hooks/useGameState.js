@@ -119,6 +119,7 @@ const getInitialState = (initialPresetKey) => {
     wordsFound: 0,
     completionTimeBonus: 0,
     lastGameWasNewRecord: false,
+    lastGameWasScoreEligible: false,
     isPlaying: false,
     gameOver: false,
     allWordsCompleted: false,
@@ -146,6 +147,7 @@ const buildRoundResetState = (state, overrides = {}) => ({
   wordsFound: 0,
   completionTimeBonus: 0,
   lastGameWasNewRecord: false,
+  lastGameWasScoreEligible: false,
   timeLeft: 0,
   currentWord: '',
   tiles: [],
@@ -275,6 +277,7 @@ function reducer(state, action) {
       return buildRoundResetState(state, {
         timeLeft: state.startTime,
         isPlaying: true,
+        lastGameWasScoreEligible: action.payload?.isScoreEligible === true,
       });
     case 'GIVE_UP':
       return { ...state, isPlaying: false, gameOver: true };
@@ -550,7 +553,10 @@ export function useGameState({ initialPresetKey = 'default' } = {}) {
       listKey: currentListKey,
       finalized: false,
     };
-    dispatch({ type: 'START_GAME' });
+    dispatch({
+      type: 'START_GAME',
+      payload: { isScoreEligible: isUsingStandardSettings },
+    });
   }, [resetBonusRef, isUsingStandardSettings, currentListKey]);
 
   const giveUp = useCallback(() => dispatch({ type: 'GIVE_UP' }), []);

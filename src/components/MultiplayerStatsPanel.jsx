@@ -1,4 +1,5 @@
 import { useValuePopup } from '../hooks/useValuePopup';
+import { getStatValueSizingStyle } from '../utils/statValueSizing';
 
 function formatClock(seconds) {
   const safeSeconds = Math.max(0, seconds);
@@ -34,15 +35,24 @@ export default function MultiplayerStatsPanel({
   const opponentScoreDelta = useValuePopup(opponentScore);
 
   if (variant === 'mockup') {
+    const gameTimeText = formatClock(gameTimeLeft);
+    const wordTimeText = `${wordTimeLeft}`;
+    const myScoreText = `${myScore}`;
+    const opponentScoreText = `${opponentScore}`;
+
     return (
       <div className="mm-mp-stats" data-mm-band-start-anchor="mp">
         <div className="mm-stat-card mm-stat-card--green mm-mp-stat-card">
-          <div className="mm-stat-card__value">{formatClock(gameTimeLeft)}</div>
+          <div className="mm-stat-card__value" style={getStatValueSizingStyle(gameTimeText)}>
+            {gameTimeText}
+          </div>
           <div className="mm-stat-card__label">Temps restant</div>
         </div>
 
         <div className="mm-stat-card mm-stat-card--yellow mm-mp-stat-card">
-          <div className="mm-stat-card__value">{wordTimeLeft}</div>
+          <div className="mm-stat-card__value" style={getStatValueSizingStyle(wordTimeText)}>
+            {wordTimeText}
+          </div>
           <div className="mm-stat-card__label">Avant prochain mot</div>
         </div>
 
@@ -50,7 +60,9 @@ export default function MultiplayerStatsPanel({
           {myScoreDelta !== null && (
             <span className="mm-mp-stat-card__delta animate-pop-up">+{myScoreDelta}</span>
           )}
-          <div className="mm-stat-card__value">{myScore}</div>
+          <div className="mm-stat-card__value" style={getStatValueSizingStyle(myScoreText)}>
+            {myScoreText}
+          </div>
           <div className="mm-stat-card__label">{truncateLabel(self?.name, 'Vous')}</div>
           <div className="mm-mp-stat-card__sub">
             {myWordsFound} mots
@@ -61,7 +73,12 @@ export default function MultiplayerStatsPanel({
           {opponentScoreDelta !== null && (
             <span className="mm-mp-stat-card__delta animate-pop-up">+{opponentScoreDelta}</span>
           )}
-          <div className="mm-stat-card__value">{opponentScore}</div>
+          <div
+            className="mm-stat-card__value"
+            style={getStatValueSizingStyle(opponentScoreText)}
+          >
+            {opponentScoreText}
+          </div>
           <div className="mm-stat-card__label">
             {truncateLabel(opponent?.name, 'Adversaire')}
           </div>

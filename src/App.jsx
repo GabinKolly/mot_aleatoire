@@ -18,6 +18,7 @@ import { useDragAndDrop } from './hooks/useDragAndDrop';
 import { useGameState } from './hooks/useGameState';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSettingsBindings } from './hooks/useSettingsBindings';
+import { getStatValueSizingStyle } from './utils/statValueSizing';
 
 const NOOP = () => {};
 
@@ -42,18 +43,28 @@ function MobileFooter() {
 }
 
 function SoloStatsRow({ timeLeft, wordsFound, score }) {
+  const timeText = formatClock(timeLeft);
+  const wordsFoundText = `${wordsFound}`;
+  const scoreText = `${score}`;
+
   return (
     <div className="mm-solo-stats" data-mm-band-start-anchor="solo">
       <div className="mm-stat-card mm-stat-card--green">
-        <div className="mm-stat-card__value">{formatClock(timeLeft)}</div>
+        <div className="mm-stat-card__value" style={getStatValueSizingStyle(timeText)}>
+          {timeText}
+        </div>
         <div className="mm-stat-card__label">TEMPS</div>
       </div>
       <div className="mm-stat-card mm-stat-card--yellow">
-        <div className="mm-stat-card__value">{wordsFound}</div>
+        <div className="mm-stat-card__value" style={getStatValueSizingStyle(wordsFoundText)}>
+          {wordsFoundText}
+        </div>
         <div className="mm-stat-card__label">MOTS</div>
       </div>
       <div className="mm-stat-card mm-stat-card--red">
-        <div className="mm-stat-card__value">{score}</div>
+        <div className="mm-stat-card__value" style={getStatValueSizingStyle(scoreText)}>
+          {scoreText}
+        </div>
         <div className="mm-stat-card__label">SCORE</div>
       </div>
     </div>
@@ -240,17 +251,20 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
           .split('')
           .map((letter, index) => ({ letter, id: `end-${index}` }))
       : state.tiles;
-  const bestScoreMessage = state.lastGameWasNewRecord
-    ? 'Vous avez battu le meilleur score !'
-    : `Le meilleur score est de ${
-        Number.isInteger(state.currentListHighScore) ? state.currentListHighScore : '-'
-      }`;
-  const endStatusLines = state.allWordsCompleted
-    ? [
-        `Vous avez trouvé tous les mots et obtenu un bonus de ${state.completionTimeBonus}`,
-        bestScoreMessage,
-      ]
-    : [bestScoreMessage];
+  const shouldShowBestScoreMessage = state.lastGameWasScoreEligible;
+  const bestScoreMessage = shouldShowBestScoreMessage
+    ? state.lastGameWasNewRecord
+      ? 'Vous avez battu le meilleur score !'
+      : `Le meilleur score est de ${
+          Number.isInteger(state.currentListHighScore) ? state.currentListHighScore : '-'
+        }.`
+    : null;
+  const endStatusLines = [
+    ...(state.allWordsCompleted
+      ? [`Vous avez trouvé tous les mots et obtenu un bonus de ${state.completionTimeBonus}.`]
+      : []),
+    ...(bestScoreMessage ? [bestScoreMessage] : []),
+  ];
   const soloBandStyle = useBandHighlightStyle(
     soloCoreRef,
     '[data-mm-band-start-anchor="solo"]',
@@ -300,8 +314,8 @@ function SoloGame({ onBack, onOpenMultiplayer }) {
         </div>
 
         <div className="mm-summary-chip" aria-label="Résumé des paramètres">
-          <span>{`${state.minWordLength} à ${state.maxWordLength} lettres, +${state.bonusTime} sec,`}</span>
-          <span>{state.wordListName}</span>
+          <span>{`${state.minWordLength} à ${state.maxWordLength} lettres, +${state.bonusTime} sec`}</span>
+          <span>{`${state.wordListName} • ${state.words.length} mots`}</span>
         </div>
 
         {state.showSettings && (

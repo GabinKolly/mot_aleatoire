@@ -375,7 +375,7 @@ a {
 .mm-solo-status-text {
   color: var(--mm-ink);
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 1.17rem;
   line-height: 1.1;
   text-align: center;
 }
@@ -400,12 +400,35 @@ a {
   border-radius: 1.05rem;
   min-height: 6rem;
   padding: 0.75rem 0.5rem 0.6rem;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: var(--mm-ink);
+}
+
+@media (max-width: 767px) {
+  .mm-solo-stats {
+    align-items: start;
+  }
+
+  .mm-solo-stats .mm-stat-card {
+    min-height: 5.2rem;
+    padding: 0.56rem 0.5rem 0.46rem;
+  }
+
+  .mm-solo-stats .mm-stat-card__value {
+    --mm-stat-value-max-size: 1.95rem;
+    --mm-stat-value-min-size: 1.08rem;
+    --mm-stat-value-shrink-step: 0.2rem;
+    line-height: 0.92;
+  }
+
+  .mm-solo-stats .mm-stat-card__label {
+    margin-top: 0.28rem;
+  }
 }
 
 .mm-stat-card--green {
@@ -425,10 +448,26 @@ a {
 }
 
 .mm-stat-card__value {
-  font-size: 1.25rem;
+  width: 100%;
+  --mm-stat-value-max-size: 1.25rem;
+  --mm-stat-value-min-size: 0.85rem;
+  --mm-stat-value-shrink-step: 0.16rem;
+  font-size: clamp(
+    var(--mm-stat-value-min-size),
+    calc(
+      var(--mm-stat-value-max-size) -
+      (
+        (var(--mm-stat-char-count, 4) - 4) *
+        var(--mm-stat-value-shrink-step)
+      )
+    ),
+    var(--mm-stat-value-max-size)
+  );
   line-height: 1;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 .mm-stat-card__label {
@@ -453,7 +492,9 @@ a {
 }
 
 .mm-mp-stat-card .mm-stat-card__value {
-  font-size: 1.12rem;
+  --mm-stat-value-max-size: 1.12rem;
+  --mm-stat-value-min-size: 0.78rem;
+  --mm-stat-value-shrink-step: 0.11rem;
 }
 
 .mm-mp-stat-card .mm-stat-card__label {
@@ -1141,7 +1182,9 @@ a {
   }
 
   .mm-stat-card__value {
-    font-size: 1.65rem;
+    --mm-stat-value-max-size: min(2.25rem, 22cqi);
+    --mm-stat-value-min-size: 1.1rem;
+    --mm-stat-value-shrink-step: 0.2rem;
   }
 
   .mm-stat-card__label {

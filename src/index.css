@@ -1097,6 +1097,7 @@ a {
 }
 
 .mm-tiles-shell {
+  --mm-tile-overflow-bleed: 0.3rem;
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
@@ -1112,12 +1113,17 @@ a {
 
 .mm-tiles-row {
   width: fit-content;
-  max-width: 100%;
+  max-width: calc(100% + (var(--mm-tile-overflow-bleed) * 2));
   display: flex;
   justify-content: flex-start;
   gap: 0.75rem;
   overflow-x: auto;
-  padding: 0.15rem 0 0.2rem;
+  margin-inline: calc(var(--mm-tile-overflow-bleed) * -1);
+  margin-block: calc(var(--mm-tile-overflow-bleed) * -1);
+  padding:
+    calc(0.15rem + var(--mm-tile-overflow-bleed))
+    var(--mm-tile-overflow-bleed)
+    calc(0.2rem + var(--mm-tile-overflow-bleed));
   scrollbar-width: none;
 }
 

@@ -51,6 +51,69 @@ Après toute modification de `party/server.js`, relancer :
 npm run deploy:partykit
 ```
 
+### Administration sécurisée du leaderboard (backup / restore / clear)
+
+Le leaderboard de compétition expose maintenant des endpoints admin protégés par token.
+
+Configurer un secret côté PartyKit :
+
+```bash
+npx partykit env add LEADERBOARD_ADMIN_TOKEN
+```
+
+Puis entrer un token long et aléatoire.
+
+Les endpoints admin utilisent `Authorization: Bearer <LEADERBOARD_ADMIN_TOKEN>`.
+Le room id global est `global`, donc base URL :
+
+```text
+https://mot-aleatoire.VOTRE_USERNAME.partykit.dev/parties/leaderboard/global
+```
+
+Exporter le leaderboard :
+
+```bash
+curl -sS \
+  -H "Authorization: Bearer $LEADERBOARD_ADMIN_TOKEN" \
+  "https://mot-aleatoire.VOTRE_USERNAME.partykit.dev/parties/leaderboard/global/admin/export"
+```
+
+Restaurer un snapshot :
+
+```bash
+curl -sS -X POST \
+  -H "Authorization: Bearer $LEADERBOARD_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data @snapshot.json \
+  "https://mot-aleatoire.VOTRE_USERNAME.partykit.dev/parties/leaderboard/global/admin/restore"
+```
+
+Format attendu de `snapshot.json` :
+
+```json
+{
+  "entries": [
+    {
+      "playerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "playerName": "Nom",
+      "score": 123,
+      "wordsFound": 10,
+      "tierReached": 2,
+      "allWordsCompleted": false,
+      "date": "2026-03-03T15:04:05.000Z"
+    }
+  ]
+}
+```
+
+Vider le leaderboard :
+
+```bash
+curl -sS -X POST \
+  -H "Authorization: Bearer $LEADERBOARD_ADMIN_TOKEN" \
+  "https://mot-aleatoire.VOTRE_USERNAME.partykit.dev/parties/leaderboard/global/admin/clear"
+```
+
 ---
 
 ## 2. Déployer le frontend

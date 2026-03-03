@@ -60,11 +60,13 @@ export default function LeaderboardTable({
             >
               <span className="mm-leaderboard__rank">{rank}</span>
               <span className="mm-leaderboard__name">{entry.playerName}</span>
-              <span className="mm-leaderboard__score">{entry.score}</span>
-              <span className="mm-leaderboard__detail">
-                {entry.wordsFound} mot{entry.wordsFound !== 1 ? 's' : ''}
-                {' · '}palier {entry.tierReached + 1}
-              </span>
+              <div className="mm-leaderboard__meta">
+                <span className="mm-leaderboard__score">{entry.score}</span>
+                <span className="mm-leaderboard__detail">
+                  {entry.wordsFound} mot{entry.wordsFound !== 1 ? 's' : ''}
+                  {' · '}palier {entry.tierReached + 1}
+                </span>
+              </div>
             </li>
           );
         })}

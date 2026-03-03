@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchLeaderboard, submitScore } from '../utils/leaderboardApi';
+import {
+  fetchLeaderboard,
+  fetchPersonalBestScore,
+  submitScore,
+} from '../utils/leaderboardApi';
 import type { LeaderboardEntry, ScorePayload } from '../utils/leaderboardApi';
 
 type SubmitStatus = 'idle' | 'submitting' | 'submitted' | 'error';
@@ -11,32 +15,46 @@ export function useLeaderboard() {
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>('idle');
   const [playerRank, setPlayerRank] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<LeaderboardEntry[]> => {
     setIsLoading(true);
     setFetchError(null);
     try {
       const data = await fetchLeaderboard();
       setEntries(data);
-    } catch {
+      return data;
+    } catch (error) {
       setFetchError('Impossible de charger le classement.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    load();
+    void load().catch(() => undefined);
   }, [load]);
 
   const submit = useCallback(
     async (payload: ScorePayload) => {
       setSubmitStatus('submitting');
+      setPlayerRank(null);
       try {
         const result = await submitScore(payload);
         if (result.success) {
-          setPlayerRank(result.rank);
+          const refreshedEntries = await load();
+          const rank = result.rank;
+          const confirmedEntry =
+            rank != null && rank > 0 && rank <= refreshedEntries.length
+              ? refreshedEntries[rank - 1]
+              : null;
+          const isConfirmed =
+            confirmedEntry != null &&
+            confirmedEntry.playerId === payload.playerId &&
+            confirmedEntry.score === payload.score;
+          if (isConfirmed) {
+            setPlayerRank(rank);
+          }
           setSubmitStatus('submitted');
-          await load();
         } else {
           setSubmitStatus('error');
         }
@@ -52,6 +70,10 @@ export function useLeaderboard() {
     setPlayerRank(null);
   }, []);
 
+  const getPersonalBestScore = useCallback(async (playerId: string) => {
+    return fetchPersonalBestScore(playerId);
+  }, []);
+
   return {
     entries,
     isLoading,
@@ -59,6 +81,7 @@ export function useLeaderboard() {
     submitStatus,
     playerRank,
     submit,
+    getPersonalBestScore,
     refresh: load,
     resetSubmitStatus,
   };

@@ -39,6 +39,14 @@ export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   return data.entries;
 }
 
+export async function fetchPersonalBestScore(playerId: string): Promise<number | null> {
+  const url = `${LEADERBOARD_URL}?playerId=${encodeURIComponent(playerId)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Personal best fetch failed: ${res.status}`);
+  const data = (await res.json()) as { personalBestScore: number | null };
+  return typeof data.personalBestScore === 'number' ? data.personalBestScore : null;
+}
+
 export async function submitScore(payload: ScorePayload): Promise<SubmitScoreResult> {
   const res = await fetch(LEADERBOARD_URL, {
     method: 'POST',

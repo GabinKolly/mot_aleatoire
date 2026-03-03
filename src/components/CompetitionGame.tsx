@@ -7,9 +7,6 @@ import MobileFooter from './MobileFooter';
 import SoloStatsRow from './SoloStatsRow';
 import { bandEndSelector, bandStartSelector } from '../constants/dom';
 import {
-  COMPETITION_START_TIME,
-  COMPETITION_WORD_BONUS,
-  COMPETITION_ALT_BONUS,
   COMPETITION_STARTING_WORD_LENGTH,
   COMPETITION_MAX_WORD_LENGTH,
 } from '../constants/competitionConfig';
@@ -64,9 +61,14 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
     submitStatus,
     playerRank,
     submit: submitScore,
+    getPersonalBestScore,
     resetSubmitStatus,
   } = useLeaderboard();
-  const hasSubmittedRef = useRef(false);
+  const hasEvaluatedEndRef = useRef(false);
+  const [isCheckingPersonalBest, setIsCheckingPersonalBest] = useState(false);
+  const [requiresPostGameName, setRequiresPostGameName] = useState(false);
+  const [personalBestCheckFailed, setPersonalBestCheckFailed] = useState(false);
+  const [personalBestScoreAtEnd, setPersonalBestScoreAtEnd] = useState<number | null>(null);
 
   useEffect(() => {
     const updateWidth = () => setScreenWidth(window.innerWidth);
@@ -101,37 +103,57 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
     `Score final : ${state.score}`,
   ];
 
-  // Submit score when game ends
+  // Evaluate whether this run beats the player's stored global personal best.
   useEffect(() => {
     if (!hasEnded) {
-      hasSubmittedRef.current = false;
+      hasEvaluatedEndRef.current = false;
       return;
     }
-    if (hasSubmittedRef.current) return;
+    if (hasEvaluatedEndRef.current) return;
     if (state.score === 0 && state.wordsFound === 0) return;
-    hasSubmittedRef.current = true;
+    hasEvaluatedEndRef.current = true;
 
-    submitScore({
-      playerId,
-      playerName: playerName || 'Anonyme',
-      score: state.score,
-      wordsFound: state.wordsFound,
-      tierReached: Math.min(state.tierIndex, MAX_TIER_INDEX),
-      allWordsCompleted: state.allWordsCompleted,
-    });
+    let cancelled = false;
+
+    void (async () => {
+      setIsCheckingPersonalBest(true);
+      setPersonalBestCheckFailed(false);
+      try {
+        const personalBestScore = await getPersonalBestScore(playerId);
+        if (cancelled) return;
+        setPersonalBestScoreAtEnd(personalBestScore);
+        const brokePersonalBest =
+          personalBestScore === null ? state.score > 0 : state.score > personalBestScore;
+        setRequiresPostGameName(brokePersonalBest);
+      } catch {
+        if (cancelled) return;
+        setPersonalBestScoreAtEnd(null);
+        setRequiresPostGameName(false);
+        setPersonalBestCheckFailed(true);
+      } finally {
+        if (!cancelled) {
+          setIsCheckingPersonalBest(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     hasEnded,
     state.score,
     state.wordsFound,
-    state.tierIndex,
-    state.allWordsCompleted,
     playerId,
-    playerName,
-    submitScore,
+    getPersonalBestScore,
   ]);
 
   const handleStartGame = useCallback(() => {
     resetSubmitStatus();
+    setRequiresPostGameName(false);
+    setIsCheckingPersonalBest(false);
+    setPersonalBestCheckFailed(false);
+    setPersonalBestScoreAtEnd(null);
     startGame();
   }, [resetSubmitStatus, startGame]);
 
@@ -139,10 +161,37 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const name = e.target.value.slice(0, 20);
       setPlayerName(name);
-      savePlayerName(name);
     },
     []
   );
+
+  const handleSubmitScore = useCallback(() => {
+    if (!hasEnded || !requiresPostGameName) return;
+    const trimmedName = playerName.trim().slice(0, 20);
+    if (!trimmedName) return;
+
+    savePlayerName(trimmedName);
+    setPlayerName(trimmedName);
+
+    submitScore({
+      playerId,
+      playerName: trimmedName,
+      score: state.score,
+      wordsFound: state.wordsFound,
+      tierReached: Math.min(state.tierIndex, MAX_TIER_INDEX),
+      allWordsCompleted: state.allWordsCompleted,
+    });
+  }, [
+    hasEnded,
+    requiresPostGameName,
+    playerName,
+    submitScore,
+    playerId,
+    state.score,
+    state.wordsFound,
+    state.tierIndex,
+    state.allWordsCompleted,
+  ]);
 
   const soloBandStyle = useBandHighlightStyle(
     soloCoreRef,
@@ -177,9 +226,8 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
           </button>
         </div>
 
-        <div className="mm-summary-chip" aria-label="Résumé des paramètres">
-          <span>{`${COMPETITION_STARTING_WORD_LENGTH} à ${COMPETITION_MAX_WORD_LENGTH} lettres, +${COMPETITION_WORD_BONUS} sec, +${COMPETITION_ALT_BONUS} sec anagramme`}</span>
-          <span>{`Départ ${COMPETITION_START_TIME} sec`}</span>
+        <div className="mm-summary-chip" aria-label="Mode de jeu">
+          <span>MODE COMPÉTITION</span>
         </div>
 
         {showCoreZone && (
@@ -201,8 +249,28 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                         {line}
                       </p>
                     ))}
+                    {isCheckingPersonalBest && (
+                      <p className="mm-solo-status-text">
+                        Vérification du meilleur score global…
+                      </p>
+                    )}
+                    {requiresPostGameName && submitStatus === 'idle' && (
+                      <p className="mm-solo-status-text">
+                        Nouveau meilleur score ! Confirmez votre nom pour le classement.
+                      </p>
+                    )}
                     {submitStatus === 'submitting' && (
                       <p className="mm-solo-status-text">Envoi du score…</p>
+                    )}
+                    {submitStatus === 'error' && (
+                      <p className="mm-solo-status-text">
+                        Impossible d&apos;enregistrer ce score pour le moment.
+                      </p>
+                    )}
+                    {personalBestCheckFailed && (
+                      <p className="mm-solo-status-text">
+                        Impossible de vérifier votre meilleur score global.
+                      </p>
                     )}
                     {submitStatus === 'submitted' &&
                       playerRank != null && (
@@ -237,30 +305,11 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
 
               {isPreStart && (
                 <div className="mm-solo-start">
-                  <div className="mm-solo-middle-slot">
-                    {!playerName.trim() && (
-                      <div className="mm-name-prompt">
-                        <label htmlFor="competition-name" className="mm-name-prompt__label">
-                          Votre nom pour le classement
-                        </label>
-                        <input
-                          id="competition-name"
-                          type="text"
-                          value={playerName}
-                          onChange={handleNameChange}
-                          placeholder="Entrez votre nom…"
-                          maxLength={20}
-                          className="mm-name-prompt__input"
-                          autoComplete="off"
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <div className="mm-solo-middle-slot" />
                   <div className="mm-solo-start__cta">
                     <button
                       type="button"
                       onClick={handleStartGame}
-                      disabled={!playerName.trim()}
                       className="mm-pill-button mm-pill-button--beige mm-pill-button--title"
                       data-mm-band-end-anchor="solo"
                     >
@@ -316,6 +365,48 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                   onReshuffle={reshuffleCurrentWord}
                   onGiveUp={giveUp}
                 />
+              )}
+
+              {hasEnded && (
+                <div className="mm-solo-middle-slot mm-solo-middle-slot--tiles">
+                  {requiresPostGameName && submitStatus !== 'submitted' && (
+                    <div className="mm-name-prompt">
+                      <label htmlFor="competition-name" className="mm-name-prompt__label">
+                        Votre nom pour le classement
+                      </label>
+                      <input
+                        id="competition-name"
+                        type="text"
+                        value={playerName}
+                        onChange={handleNameChange}
+                        placeholder="Entrez votre nom…"
+                        maxLength={20}
+                        className="mm-name-prompt__input"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSubmitScore}
+                        disabled={submitStatus === 'submitting' || !playerName.trim()}
+                        className="mm-pill-button mm-pill-button--beige"
+                      >
+                        Confirmer
+                      </button>
+                    </div>
+                  )}
+                  {!isCheckingPersonalBest &&
+                    !personalBestCheckFailed &&
+                    !requiresPostGameName &&
+                    submitStatus === 'idle' &&
+                    personalBestScoreAtEnd != null &&
+                    state.score <= personalBestScoreAtEnd && (
+                      <div className="mm-name-prompt">
+                        <p className="mm-solo-status-text">
+                          {`Vous n'avez pas battu votre meilleur score de ${personalBestScoreAtEnd}.`}
+                        </p>
+                      </div>
+                    )}
+                </div>
               )}
 
               {hasEnded && (

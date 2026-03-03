@@ -36,7 +36,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_PARTYKIT_HOST: mot-aleatoire.gabinkolly.partykit.dev
+          VITE_PARTYKIT_HOST: mot-aleatoire-partykit.inkyglobal.com
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

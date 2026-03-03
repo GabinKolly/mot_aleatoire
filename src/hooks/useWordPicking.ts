@@ -2,9 +2,27 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch } from 'react';
 import { buildShuffledTiles, pickWordFromList } from '../utils/wordPicking';
 import { NEXT_WORD_DELAY_MS, BONUS_ANIMATION_MS } from '../constants/timings';
-import type { GameAction, GameState } from '../types/game';
+import type { Tile } from '../types/game';
 
-export function useWordPicking(state: GameState, dispatch: Dispatch<GameAction>) {
+export interface WordPickingState {
+  allWords: string[];
+  bonusCheckWords: string[];
+  minWordLength: number;
+  maxWordLength: number;
+  usedWords: string[];
+  tiles: Tile[];
+  currentWord: string;
+  isPlaying: boolean;
+}
+
+export type WordPickingAction =
+  | { type: 'NO_MORE_WORDS' }
+  | { type: 'SET_NEXT_WORD'; payload: { word: string; tiles: Tile[] } }
+  | { type: 'CORRECT_WORD' }
+  | { type: 'AWARD_ALT_BONUS' }
+  | { type: 'CLEAR_ALT_BONUS' };
+
+export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordPickingAction>) {
   const bonusAwardedWordsRef = useRef<Set<string>>(new Set());
   const currentWordScoredRef = useRef(false);
 
@@ -72,10 +90,10 @@ export function useWordPicking(state: GameState, dispatch: Dispatch<GameAction>)
   }, [state.tiles, state.currentWord, bonusCheckWordsSet, wordsSet, pickNewWord, dispatch]);
 
   useEffect(() => {
-    if (state.isPlaying && state.usedWords.length === 0 && state.currentWord === '') {
+    if (state.isPlaying && state.currentWord === '') {
       pickNewWord();
     }
-  }, [state.isPlaying, state.usedWords.length, state.currentWord, pickNewWord]);
+  }, [state.isPlaying, state.currentWord, pickNewWord]);
 
   return { words, wordsSet, bonusCheckWordsSet, checkWord, resetBonusRef };
 }

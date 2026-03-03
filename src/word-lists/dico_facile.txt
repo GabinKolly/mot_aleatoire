@@ -822,7 +822,6 @@ cave
 ce
 ceci
 céder
-cégep
 ceinture
 cela
 célébration
@@ -830,8 +829,6 @@ célébrer
 célébrité
 céleste
 célibataire
-celle
-celles
 cellulaire
 cellule
 celui
@@ -5214,10 +5211,7 @@ téléphone
 téléphonie
 téléphonique
 télévision
-telle
 tellement
-telles
-tels
 témoignage
 témoigner
 témoin

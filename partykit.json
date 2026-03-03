@@ -1,5 +1,8 @@
 {
   "name": "mot-aleatoire",
   "main": "party/server.ts",
-  "compatibilityDate": "2025-01-01"
+  "compatibilityDate": "2025-01-01",
+  "parties": {
+    "leaderboard": "party/leaderboard.ts"
+  }
 }

@@ -1,13 +1,15 @@
-import { Play, Users } from 'lucide-react';
+import { Play, Trophy, Users } from 'lucide-react';
 
 interface ModeSelectionProps {
   onSelectSolo: () => void;
   onSelectMultiplayer: () => void;
+  onSelectCompetition: () => void;
 }
 
 export default function ModeSelection({
   onSelectSolo,
   onSelectMultiplayer,
+  onSelectCompetition,
 }: ModeSelectionProps) {
   return (
     <div className="mm-menu-selection" aria-label="Choix du mode">
@@ -32,12 +34,12 @@ export default function ModeSelection({
         </button>
         <button
           type="button"
-          disabled
-          aria-disabled="true"
+          onClick={onSelectCompetition}
           className="mm-menu-button mm-menu-button--red"
           data-mm-menu-anchor="end"
         >
-          <span className="mm-menu-button__label--unavailable">Compétition</span>
+          <Trophy className="mm-menu-button__icon" strokeWidth={2.5} />
+          <span>Compétition</span>
         </button>
       </div>
     </div>

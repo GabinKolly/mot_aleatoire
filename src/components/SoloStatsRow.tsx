@@ -5,11 +5,12 @@ interface SoloStatsRowProps {
   timeLeft: number;
   wordsFound: number;
   score: number;
+  wordsFoundText?: string;
 }
 
-export default function SoloStatsRow({ timeLeft, wordsFound, score }: SoloStatsRowProps) {
+export default function SoloStatsRow({ timeLeft, wordsFound, score, wordsFoundText: wordsFoundTextOverride }: SoloStatsRowProps) {
   const timeText = formatClock(timeLeft);
-  const wordsFoundText = `${wordsFound}`;
+  const wordsFoundText = wordsFoundTextOverride ?? `${wordsFound}`;
   const scoreText = `${score}`;
 
   return (

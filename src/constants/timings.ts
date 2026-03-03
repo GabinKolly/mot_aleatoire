@@ -12,3 +12,6 @@ export const SCORE_POPUP_DURATION_MS = 900;
 
 /** Duration (ms) for which the "copied" confirmation is shown after copying the room code. */
 export const COPY_FEEDBACK_MS = 2000;
+
+/** Duration (ms) of the tier-transition message in competition mode. */
+export const TIER_TRANSITION_MS = 1500;

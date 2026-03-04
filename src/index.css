@@ -1486,11 +1486,11 @@ a {
   width: 100%;
   max-width: 26rem;
   margin-inline: auto;
-  padding: 0.75rem 0;
+  padding: 0.75rem 0 0.9rem;
   text-align: center;
   color: var(--mm-ink);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .mm-leaderboard--loading,
@@ -1506,35 +1506,64 @@ a {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.55rem;
 }
 
 .mm-leaderboard__entry {
+  --mm-leaderboard-row-height: 2.835rem;
+  --mm-leaderboard-row-vpad: 0.2rem;
+  --mm-leaderboard-rank-font-size: 1.3rem;
+  --mm-leaderboard-name-score-font-size: var(--mm-leaderboard-rank-font-size);
+  --mm-leaderboard-chip-size: calc(
+    var(--mm-leaderboard-row-height) - (var(--mm-leaderboard-row-vpad) * 2)
+  );
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  grid-template-columns: var(--mm-leaderboard-chip-size) minmax(0, 1fr) auto auto;
   align-items: center;
-  column-gap: 0.65rem;
-  padding: 0.45rem 0.7rem;
-  border-radius: 0.7rem;
-  background: rgba(240, 223, 200, 0.25);
+  column-gap: 0.5rem;
+  min-height: var(--mm-leaderboard-row-height);
+  padding: var(--mm-leaderboard-row-vpad) 0.22rem;
+  border-radius: 999px;
+}
+
+.mm-leaderboard__entry--rank-1 {
+  background: var(--mm-green);
+}
+
+.mm-leaderboard__entry--rank-2 {
+  background: var(--mm-yellow);
+}
+
+.mm-leaderboard__entry--rank-3 {
+  background: var(--mm-red-soft);
+}
+
+.mm-leaderboard__entry--rank-other {
+  background: var(--mm-blue);
 }
 
 .mm-leaderboard__entry--me {
-  background: rgba(240, 223, 200, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(47, 47, 47, 0.16);
 }
 
 .mm-leaderboard__entry--highlight {
-  background: rgba(154, 241, 118, 0.35);
-  outline: 2px solid rgba(154, 241, 118, 0.6);
+  outline: 2px solid rgba(47, 47, 47, 0.3);
+  outline-offset: 1px;
+  box-shadow: inset 0 0 0 2px rgba(47, 47, 47, 0.2);
 }
 
 .mm-leaderboard__rank {
-  font-weight: 800;
-  font-size: 1.25rem;
+  width: var(--mm-leaderboard-chip-size);
+  height: var(--mm-leaderboard-chip-size);
+  border-radius: 50%;
+  background: var(--mm-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--mm-leaderboard-rank-font-size);
   line-height: 1;
-  color: rgba(47, 47, 47, 0.5);
-  min-width: 0;
-  text-align: center;
+  color: var(--mm-ink);
   justify-self: center;
 }
 
@@ -1542,12 +1571,33 @@ a {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.1rem;
+  justify-content: center;
+  justify-self: end;
+  gap: 0.08rem;
   min-width: 0;
+  text-align: right;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.mm-leaderboard__tier,
+.mm-leaderboard__words {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mm-leaderboard__tier {
+  font-size: 0.68rem;
+}
+
+.mm-leaderboard__words {
+  font-size: 0.62rem;
 }
 
 .mm-leaderboard__name {
-  text-align: center;
+  text-align: left;
+  font-weight: 700;
+  font-size: var(--mm-leaderboard-name-score-font-size);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1555,14 +1605,54 @@ a {
 }
 
 .mm-leaderboard__score {
-  font-weight: 800;
-  text-align: right;
+  min-width: 4.42rem;
+  height: var(--mm-leaderboard-chip-size);
+  padding: 0 0.66rem;
+  border-radius: 999px;
+  background: var(--mm-bg);
+  font-weight: 700;
+  font-size: var(--mm-leaderboard-name-score-font-size);
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mm-leaderboard__detail {
-  font-size: 0.8rem;
-  opacity: 0.6;
-  text-align: right;
+@media (max-width: 460px) {
+  .mm-leaderboard__entry {
+    --mm-leaderboard-row-height: 2.655rem;
+    --mm-leaderboard-row-vpad: 0.18rem;
+    --mm-leaderboard-rank-font-size: 1.16rem;
+    grid-template-columns: var(--mm-leaderboard-chip-size) minmax(0, 1fr) auto auto;
+    column-gap: 0.42rem;
+    min-height: var(--mm-leaderboard-row-height);
+    padding: var(--mm-leaderboard-row-vpad) 0.16rem;
+  }
+
+  .mm-leaderboard__rank {
+    font-size: var(--mm-leaderboard-rank-font-size);
+  }
+
+  .mm-leaderboard__name {
+    font-size: var(--mm-leaderboard-name-score-font-size);
+  }
+
+  .mm-leaderboard__tier {
+    font-size: 0.58rem;
+  }
+
+  .mm-leaderboard__words {
+    font-size: 0.54rem;
+  }
+
+  .mm-leaderboard__score {
+    min-width: 3.9rem;
+    padding: 0 0.58rem;
+    font-size: var(--mm-leaderboard-name-score-font-size);
+  }
 }
 
 /* ── Name prompt ─────────────────────────────────────────────── */

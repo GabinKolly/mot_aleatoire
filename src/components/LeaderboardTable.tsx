@@ -46,11 +46,20 @@ export default function LeaderboardTable({
           const rank = index + 1;
           const isCurrentPlayer = entry.playerId === currentPlayerId;
           const isHighlighted = highlightRank != null && rank === highlightRank;
+          const rankClass =
+            rank === 1
+              ? 'mm-leaderboard__entry--rank-1'
+              : rank === 2
+                ? 'mm-leaderboard__entry--rank-2'
+                : rank === 3
+                  ? 'mm-leaderboard__entry--rank-3'
+                  : 'mm-leaderboard__entry--rank-other';
           return (
             <li
               key={entry.playerId}
               className={[
                 'mm-leaderboard__entry',
+                rankClass,
                 isCurrentPlayer ? 'mm-leaderboard__entry--me' : '',
                 isHighlighted ? 'mm-leaderboard__entry--highlight' : '',
               ]
@@ -61,12 +70,12 @@ export default function LeaderboardTable({
               <span className="mm-leaderboard__rank">{rank}</span>
               <span className="mm-leaderboard__name">{entry.playerName}</span>
               <div className="mm-leaderboard__meta">
-                <span className="mm-leaderboard__score">{entry.score}</span>
-                <span className="mm-leaderboard__detail">
-                  {entry.wordsFound} mot{entry.wordsFound !== 1 ? 's' : ''}
-                  {' · '}palier {entry.tierReached + 1}
+                <span className="mm-leaderboard__tier">NIVEAU {entry.tierReached + 1}</span>
+                <span className="mm-leaderboard__words">
+                  {entry.wordsFound} MOT{entry.wordsFound !== 1 ? 'S' : ''}
                 </span>
               </div>
+              <span className="mm-leaderboard__score">{entry.score}</span>
             </li>
           );
         })}

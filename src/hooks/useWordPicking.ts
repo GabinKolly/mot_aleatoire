@@ -25,6 +25,7 @@ export type WordPickingAction =
 export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordPickingAction>) {
   const bonusAwardedWordsRef = useRef<Set<string>>(new Set());
   const currentWordScoredRef = useRef(false);
+  const pickNewWordRef = useRef<() => void>(() => {});
 
   const words = useMemo(
     () =>
@@ -63,6 +64,10 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
     dispatch({ type: 'SET_NEXT_WORD', payload: { word, tiles: nextTiles } });
   }, [state.usedWords, words, dispatch, resetBonusRef]);
 
+  useEffect(() => {
+    pickNewWordRef.current = pickNewWord;
+  }, [pickNewWord]);
+
   const checkWord = useCallback(() => {
     if (currentWordScoredRef.current) {
       return;
@@ -73,7 +78,7 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
     if (currentTileWord === state.currentWord && state.currentWord.length > 0) {
       currentWordScoredRef.current = true;
       dispatch({ type: 'CORRECT_WORD' });
-      setTimeout(() => pickNewWord(), NEXT_WORD_DELAY_MS);
+      setTimeout(() => pickNewWordRef.current(), NEXT_WORD_DELAY_MS);
       return;
     }
 
@@ -87,7 +92,7 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
       bonusAwardedWordsRef.current.add(currentTileWord);
       setTimeout(() => dispatch({ type: 'CLEAR_ALT_BONUS' }), BONUS_ANIMATION_MS);
     }
-  }, [state.tiles, state.currentWord, bonusCheckWordsSet, wordsSet, pickNewWord, dispatch]);
+  }, [state.tiles, state.currentWord, bonusCheckWordsSet, wordsSet, dispatch]);
 
   useEffect(() => {
     if (state.isPlaying && state.currentWord === '') {

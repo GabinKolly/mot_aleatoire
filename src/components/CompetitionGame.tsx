@@ -348,86 +348,86 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                   onGiveUp={NOOP}
                 />
               )}
+
+              {hasEnded && (showPostGameStatus || showPostGameNamePrompt) && (
+                <section className="mm-competition-postgame">
+                  {showPostGameStatus && (
+                    <div className="mm-solo-status-stack" role="status" aria-live="polite">
+                      {state.allWordsCompleted && (
+                        <p className="mm-solo-status-text">
+                          Vous avez trouvé tous les mots disponibles !
+                        </p>
+                      )}
+                      {isCheckingPersonalBest && (
+                        <p className="mm-solo-status-text">
+                          Vérification du meilleur score global…
+                        </p>
+                      )}
+                      {requiresPostGameName && submitStatus === 'idle' && (
+                        <p className="mm-solo-status-text">
+                          Nouveau meilleur score ! Confirmez votre nom pour le classement.
+                        </p>
+                      )}
+                      {submitStatus === 'submitting' && (
+                        <p className="mm-solo-status-text">Envoi du score…</p>
+                      )}
+                      {submitStatus === 'error' && (
+                        <p className="mm-solo-status-text">
+                          Impossible d&apos;enregistrer ce score pour le moment.
+                        </p>
+                      )}
+                      {personalBestCheckFailed && (
+                        <p className="mm-solo-status-text">
+                          Impossible de vérifier votre meilleur score global.
+                        </p>
+                      )}
+                      {submitStatus === 'submitted' &&
+                        playerRank != null && (
+                          <p className="mm-solo-status-text">
+                            {`Vous êtes #${playerRank} au classement !`}
+                          </p>
+                        )}
+                      {!isCheckingPersonalBest &&
+                        !personalBestCheckFailed &&
+                        !requiresPostGameName &&
+                        submitStatus === 'idle' &&
+                        personalBestScoreAtEnd != null &&
+                        state.score <= personalBestScoreAtEnd && (
+                          <p className="mm-solo-status-text">
+                            {`Vous n'avez pas battu votre meilleur score de ${personalBestScoreAtEnd}.`}
+                          </p>
+                        )}
+                    </div>
+                  )}
+
+                  {showPostGameNamePrompt && (
+                    <div className="mm-name-prompt">
+                      <label htmlFor="competition-name" className="mm-name-prompt__label">
+                        Votre nom pour le classement
+                      </label>
+                      <input
+                        id="competition-name"
+                        type="text"
+                        value={playerName}
+                        onChange={handleNameChange}
+                        placeholder="Entrez votre nom…"
+                        maxLength={20}
+                        className="mm-name-prompt__input"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSubmitScore}
+                        disabled={submitStatus === 'submitting' || !playerName.trim()}
+                        className="mm-pill-button mm-pill-button--beige"
+                      >
+                        Confirmer
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
             </div>
-          </section>
-        )}
-
-        {hasEnded && (showPostGameStatus || showPostGameNamePrompt) && (
-          <section className="mm-competition-postgame">
-            {showPostGameStatus && (
-              <div className="mm-solo-status-stack" role="status" aria-live="polite">
-                {state.allWordsCompleted && (
-                  <p className="mm-solo-status-text">
-                    Vous avez trouvé tous les mots disponibles !
-                  </p>
-                )}
-                {isCheckingPersonalBest && (
-                  <p className="mm-solo-status-text">
-                    Vérification du meilleur score global…
-                  </p>
-                )}
-                {requiresPostGameName && submitStatus === 'idle' && (
-                  <p className="mm-solo-status-text">
-                    Nouveau meilleur score ! Confirmez votre nom pour le classement.
-                  </p>
-                )}
-                {submitStatus === 'submitting' && (
-                  <p className="mm-solo-status-text">Envoi du score…</p>
-                )}
-                {submitStatus === 'error' && (
-                  <p className="mm-solo-status-text">
-                    Impossible d&apos;enregistrer ce score pour le moment.
-                  </p>
-                )}
-                {personalBestCheckFailed && (
-                  <p className="mm-solo-status-text">
-                    Impossible de vérifier votre meilleur score global.
-                  </p>
-                )}
-                {submitStatus === 'submitted' &&
-                  playerRank != null && (
-                    <p className="mm-solo-status-text">
-                      {`Vous êtes #${playerRank} au classement !`}
-                    </p>
-                  )}
-                {!isCheckingPersonalBest &&
-                  !personalBestCheckFailed &&
-                  !requiresPostGameName &&
-                  submitStatus === 'idle' &&
-                  personalBestScoreAtEnd != null &&
-                  state.score <= personalBestScoreAtEnd && (
-                    <p className="mm-solo-status-text">
-                      {`Vous n'avez pas battu votre meilleur score de ${personalBestScoreAtEnd}.`}
-                    </p>
-                  )}
-              </div>
-            )}
-
-            {showPostGameNamePrompt && (
-              <div className="mm-name-prompt">
-                <label htmlFor="competition-name" className="mm-name-prompt__label">
-                  Votre nom pour le classement
-                </label>
-                <input
-                  id="competition-name"
-                  type="text"
-                  value={playerName}
-                  onChange={handleNameChange}
-                  placeholder="Entrez votre nom…"
-                  maxLength={20}
-                  className="mm-name-prompt__input"
-                  autoComplete="off"
-                />
-                <button
-                  type="button"
-                  onClick={handleSubmitScore}
-                  disabled={submitStatus === 'submitting' || !playerName.trim()}
-                  className="mm-pill-button mm-pill-button--beige"
-                >
-                  Confirmer
-                </button>
-              </div>
-            )}
           </section>
         )}
 

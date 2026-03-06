@@ -10,9 +10,7 @@ import type { Tile as TileType } from '../types/game';
 export interface DragHandlers {
   draggedIndex: number | null;
   touchDragPosition: { x: number; y: number } | null;
-  onDragStart: (event: React.DragEvent<HTMLElement>, index: number) => void;
-  onDragOver: (event: React.DragEvent<HTMLElement>, index: number) => void;
-  onDragEnd: () => void;
+  onMouseDown: (event: React.MouseEvent<HTMLElement>, index: number) => void;
   onTouchStart: (event: React.TouchEvent<HTMLElement>, index: number) => void;
   onTouchMove: (event: React.TouchEvent<HTMLElement>) => void;
   onTouchEnd: () => void;
@@ -152,9 +150,7 @@ export default function GameScreen({
                   revealType={revealType}
                   interactionsDisabled={interactionsDisabled}
                   draggedIndex={draggedIndex}
-                  onDragStart={dragHandlers.onDragStart}
-                  onDragOver={dragHandlers.onDragOver}
-                  onDragEnd={dragHandlers.onDragEnd}
+                  onMouseDown={dragHandlers.onMouseDown}
                   onTouchStart={dragHandlers.onTouchStart}
                   onTouchMove={dragHandlers.onTouchMove}
                   onTouchEnd={dragHandlers.onTouchEnd}

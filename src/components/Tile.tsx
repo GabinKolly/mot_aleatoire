@@ -15,9 +15,7 @@ interface TileProps {
   revealType: TileRevealType;
   interactionsDisabled: boolean;
   draggedIndex: number | null;
-  onDragStart: DragHandlers['onDragStart'];
-  onDragOver: DragHandlers['onDragOver'];
-  onDragEnd: DragHandlers['onDragEnd'];
+  onMouseDown: DragHandlers['onMouseDown'];
   onTouchStart: DragHandlers['onTouchStart'];
   onTouchMove: DragHandlers['onTouchMove'];
   onTouchEnd: DragHandlers['onTouchEnd'];
@@ -35,9 +33,7 @@ export default function Tile({
   revealType,
   interactionsDisabled,
   draggedIndex,
-  onDragStart,
-  onDragOver,
-  onDragEnd,
+  onMouseDown,
   onTouchStart,
   onTouchMove,
   onTouchEnd,
@@ -45,10 +41,8 @@ export default function Tile({
   return (
     <div
       data-tile-index={index}
-      draggable={!interactionsDisabled}
-      onDragStart={(event) => onDragStart(event, index)}
-      onDragOver={(event) => onDragOver(event, index)}
-      onDragEnd={onDragEnd}
+      draggable={false}
+      onMouseDown={(event) => onMouseDown(event, index)}
       onTouchStart={(event) => onTouchStart(event, index)}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

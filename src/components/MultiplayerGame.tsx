@@ -157,9 +157,7 @@ export default function MultiplayerGame({ onBack }: MultiplayerGameProps) {
                 dragHandlers={{
                   draggedIndex: dragAndDrop.draggedIndex,
                   touchDragPosition: dragAndDrop.touchDragPosition,
-                  onDragStart: dragAndDrop.handleDragStart,
-                  onDragOver: dragAndDrop.handleDragOver,
-                  onDragEnd: dragAndDrop.handleDragEnd,
+                  onMouseDown: dragAndDrop.handleMouseDown,
                   onTouchStart: dragAndDrop.handleTouchStart,
                   onTouchMove: dragAndDrop.handleTouchMove,
                   onTouchEnd: dragAndDrop.handleTouchEnd,

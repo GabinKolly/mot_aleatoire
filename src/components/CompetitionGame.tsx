@@ -25,9 +25,7 @@ const NOOP = (): void => {};
 const NOOP_DRAG_HANDLERS: DragHandlers = {
   draggedIndex: null,
   touchDragPosition: null,
-  onDragStart: NOOP,
-  onDragOver: NOOP,
-  onDragEnd: NOOP,
+  onMouseDown: NOOP,
   onTouchStart: NOOP,
   onTouchMove: NOOP,
   onTouchEnd: NOOP,
@@ -354,9 +352,7 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                   dragHandlers={{
                     draggedIndex: dragAndDrop.draggedIndex,
                     touchDragPosition: dragAndDrop.touchDragPosition,
-                    onDragStart: dragAndDrop.handleDragStart,
-                    onDragOver: dragAndDrop.handleDragOver,
-                    onDragEnd: dragAndDrop.handleDragEnd,
+                    onMouseDown: dragAndDrop.handleMouseDown,
                     onTouchStart: dragAndDrop.handleTouchStart,
                     onTouchMove: dragAndDrop.handleTouchMove,
                     onTouchEnd: dragAndDrop.handleTouchEnd,

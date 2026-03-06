@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { DragEvent, TouchEvent } from 'react';
+import type { MouseEvent, TouchEvent } from 'react';
 import type { Tile } from '../types/game';
 
 interface UseDragAndDropOptions {
@@ -16,7 +16,7 @@ export function useDragAndDrop({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [touchDragPosition, setTouchDragPosition] = useState<{ x: number; y: number } | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
-  const dragImageElementRef = useRef<HTMLElement | null>(null);
+  const clearMouseListenersRef = useRef<(() => void) | null>(null);
   const onDropCompleteRef = useRef(onDropComplete);
   const dropCompleteTimeoutRef = useRef<number | null>(null);
 
@@ -26,6 +26,8 @@ export function useDragAndDrop({
 
   useEffect(
     () => () => {
+      clearMouseListenersRef.current?.();
+      clearMouseListenersRef.current = null;
       if (dropCompleteTimeoutRef.current !== null) {
         window.clearTimeout(dropCompleteTimeoutRef.current);
         dropCompleteTimeoutRef.current = null;
@@ -34,13 +36,13 @@ export function useDragAndDrop({
     []
   );
 
-  const clearDesktopDragImage = () => {
-    dragImageElementRef.current?.remove();
-    dragImageElementRef.current = null;
+  const clearMouseListeners = () => {
+    clearMouseListenersRef.current?.();
+    clearMouseListenersRef.current = null;
   };
 
   const clearDragState = () => {
-    clearDesktopDragImage();
+    clearMouseListeners();
     draggedIndexRef.current = null;
     setDraggedIndex(null);
     setTouchDragPosition(null);
@@ -62,8 +64,31 @@ export function useDragAndDrop({
     setDraggedIndex(to);
   };
 
-  const handleDragStart = (
-    event: DragEvent<HTMLElement>,
+  const reorderToPoint = (x: number, y: number): void => {
+    const from = draggedIndexRef.current;
+    if (from === null || typeof document === 'undefined') {
+      return;
+    }
+
+    const elements = document.elementsFromPoint(x, y);
+    const tileElement = elements.find(
+      (element) => (element as HTMLElement).dataset.tileIndex
+    ) as HTMLElement | undefined;
+
+    if (!tileElement) {
+      return;
+    }
+
+    const targetIndex = Number.parseInt(tileElement.dataset.tileIndex!, 10);
+    if (Number.isNaN(targetIndex) || targetIndex === from) {
+      return;
+    }
+
+    reorderTiles(from, targetIndex);
+  };
+
+  const handleMouseDown = (
+    event: MouseEvent<HTMLElement>,
     index: number
   ): void => {
     if (isInteractionLocked) {
@@ -71,60 +96,40 @@ export function useDragAndDrop({
       return;
     }
 
-    const dragSourceElement = event?.currentTarget;
-    const dataTransfer = event?.dataTransfer;
-
-    if (dataTransfer) {
-      dataTransfer.effectAllowed = 'move';
-
-      try {
-        dataTransfer.setData('text/plain', String(index));
-      } catch {
-        // Some browsers can throw here; drag still works without the payload.
-      }
-
-      if (
-        typeof document !== 'undefined' &&
-        dragSourceElement instanceof HTMLElement
-      ) {
-        clearDesktopDragImage();
-
-        const dragImageElement = dragSourceElement.cloneNode(true) as HTMLElement;
-        const { width, height } = dragSourceElement.getBoundingClientRect();
-        dragImageElement.style.position = 'fixed';
-        dragImageElement.style.top = '-9999px';
-        dragImageElement.style.left = '-9999px';
-        dragImageElement.style.margin = '0';
-        dragImageElement.style.transform = 'none';
-        dragImageElement.style.opacity = '1';
-        dragImageElement.style.pointerEvents = 'none';
-        document.body.appendChild(dragImageElement);
-        dragImageElementRef.current = dragImageElement;
-        dataTransfer.setDragImage(dragImageElement, width / 2, height / 2);
-      }
-    }
-
-    draggedIndexRef.current = index;
-    setDraggedIndex(index);
-  };
-
-  const handleDragOver = (event: DragEvent<HTMLElement>, index: number): void => {
-    if (isInteractionLocked) {
-      clearDragState();
+    if (event.button !== 0) {
       return;
     }
 
     event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
+    clearMouseListeners();
 
-    const from = draggedIndexRef.current;
-    if (from === null || from === index) {
-      return;
-    }
+    const handleWindowMouseMove = (moveEvent: globalThis.MouseEvent): void => {
+      if (isInteractionLocked) {
+        clearDragState();
+        return;
+      }
 
-    reorderTiles(from, index);
+      setTouchDragPosition({ x: moveEvent.clientX, y: moveEvent.clientY });
+      reorderToPoint(moveEvent.clientX, moveEvent.clientY);
+    };
+
+    const handleWindowMouseUp = (): void => {
+      finishDrop();
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    window.addEventListener('blur', handleWindowMouseUp);
+
+    clearMouseListenersRef.current = () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+      window.removeEventListener('blur', handleWindowMouseUp);
+    };
+
+    draggedIndexRef.current = index;
+    setDraggedIndex(index);
+    setTouchDragPosition({ x: event.clientX, y: event.clientY });
   };
 
   const finishDrop = (): void => {
@@ -143,10 +148,6 @@ export function useDragAndDrop({
       dropCompleteTimeoutRef.current = null;
       onDropCompleteRef.current();
     }, 0);
-  };
-
-  const handleDragEnd = (): void => {
-    finishDrop();
   };
 
   const handleTouchStart = (
@@ -185,27 +186,8 @@ export function useDragAndDrop({
       return;
     }
 
-    setTouchDragPosition((previous) =>
-      previous
-        ? { ...previous, x: touch.clientX, y: touch.clientY }
-        : null
-    );
-
-    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-    const tileElement = elements.find(
-      (element) => (element as HTMLElement).dataset.tileIndex
-    ) as HTMLElement | undefined;
-
-    if (!tileElement) {
-      return;
-    }
-
-    const targetIndex = Number.parseInt(tileElement.dataset.tileIndex!, 10);
-    if (Number.isNaN(targetIndex) || targetIndex === from) {
-      return;
-    }
-
-    reorderTiles(from, targetIndex);
+    setTouchDragPosition({ x: touch.clientX, y: touch.clientY });
+    reorderToPoint(touch.clientX, touch.clientY);
   };
 
   const handleTouchEnd = (): void => {
@@ -215,9 +197,7 @@ export function useDragAndDrop({
   return {
     draggedIndex,
     touchDragPosition,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
+    handleMouseDown,
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,

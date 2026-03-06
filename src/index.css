@@ -1051,6 +1051,10 @@ a {
   align-items: center;
 }
 
+.mm-solo-middle-slot--transition {
+  align-items: center;
+}
+
 .mm-solo-start__cta {
   display: flex;
   justify-content: center;

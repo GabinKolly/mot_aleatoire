@@ -292,7 +292,7 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
 
               {state.isPlaying && showTierTransition && (
                 <div className="mm-solo-game">
-                  <div className="mm-solo-middle-slot">
+                  <div className="mm-solo-middle-slot mm-solo-middle-slot--transition">
                     <div className="mm-tier-transition" role="status" aria-live="polite">
                       <p className="mm-tier-transition__badge">{`NIVEAU ${state.tierIndex + 1}`}</p>
                     </div>

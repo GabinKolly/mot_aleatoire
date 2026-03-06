@@ -670,6 +670,7 @@ bout
 bouteille
 boutique
 bouton
+bowling
 box
 boxe
 boxeur
@@ -3312,7 +3313,6 @@ menu
 mépris
 méprise
 mer
-mercato
 merci
 mercier
 mercredi
@@ -3517,7 +3517,6 @@ nécessairement
 nécessité
 néerlandais
 négatif
-négative
 négligeable
 négligence
 négociation
@@ -4700,7 +4699,6 @@ routier
 routine
 roux
 royal
-royale
 royaume
 ruban
 rubrique
@@ -4866,7 +4864,6 @@ service
 serviette
 servir
 serviteur
-ses
 session
 set
 seuil
@@ -5053,7 +5050,6 @@ startup
 station
 stationnement
 statistique
-stats
 statue
 statut
 steak
@@ -5076,7 +5072,6 @@ stupide
 style
 stylo
 subir
-subit
 subitement
 sublime
 substance
@@ -5090,7 +5085,6 @@ successivement
 sucer
 sucre
 sud
-suède
 sueur
 suffire
 suffisamment
@@ -5315,9 +5309,7 @@ tournoi
 tournure
 tous
 tout
-toute
 toutefois
-toutes
 toxique
 tracer
 traction

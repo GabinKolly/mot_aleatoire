@@ -42,7 +42,7 @@ export const getStandardWordLengthForSelection = ({
     return { minWordLength: 4, maxWordLength: 7 };
   }
 
-  if (selectedPreset === 'motsAvecW') {
+  if (selectedPreset === 'motsAvecW' || selectedPreset === 'motsAvecWFacile') {
     return { minWordLength: 3, maxWordLength: 7 };
   }
 

@@ -72299,7 +72299,6 @@ gousses
 gousset
 goussets
 goût
-gout
 goûta
 goutai
 goûtai

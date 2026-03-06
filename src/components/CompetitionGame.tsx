@@ -317,12 +317,7 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                 <div className="mm-solo-game">
                   <div className="mm-solo-middle-slot">
                     <div className="mm-tier-transition" role="status" aria-live="polite">
-                      <p className="mm-tier-transition__text">
-                        Nouveau palier atteint !
-                      </p>
-                      <p className="mm-tier-transition__text">
-                        {`Bonus de ${state.tierTransitionBonus}.`}
-                      </p>
+                      <p className="mm-tier-transition__badge">{`NIVEAU ${state.tierIndex + 1}`}</p>
                     </div>
                   </div>
                   <div className="mm-solo-game__actions">

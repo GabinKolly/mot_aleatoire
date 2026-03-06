@@ -2518,7 +2518,7 @@ gorge
 gosse
 gothique
 gouffre
-gout
+goût
 goûter
 goutte
 gouvernance
@@ -3696,7 +3696,6 @@ os
 oser
 otage
 ou
-ouah
 ouais
 oubli
 oublier

@@ -118,6 +118,7 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
         ...buildInitialState(),
         timeLeft: initialTier.startTime,
         isPlaying: true,
+        tierTransitionBonus: 0,
         minWordLength: initialTier.minWordLength,
         maxWordLength: initialTier.maxWordLength,
       };
@@ -195,8 +196,6 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
       return {
         ...state,
         tierTransitionBonus: null,
-        currentWord: '',
-        tiles: [],
       };
     case 'AWARD_ALT_BONUS':
       return {

@@ -26,7 +26,7 @@ export const COMPETITION_TIERS: CompetitionTierConfig[] = [
   { startTime: 45, wordBonus: 15, minWordLength: 6, maxWordLength: 6 },
   { startTime: 45, wordBonus: 15, minWordLength: 7, maxWordLength: 7 },
   { startTime: 45, wordBonus: 15, minWordLength: 8, maxWordLength: 8 },
-  { startTime: 30, wordBonus: 10, minWordLength: 6, maxWordLength: 8 },
-  { startTime: 15, wordBonus: 7, minWordLength: 6, maxWordLength: 8 },
-  { startTime: 10, wordBonus: 5, minWordLength: 6, maxWordLength: 8, isInfinite: true },
+  { startTime: 30, wordBonus: 10, minWordLength: 7, maxWordLength: 8 },
+  { startTime: 15, wordBonus: 7, minWordLength: 7, maxWordLength: 8 },
+  { startTime: 10, wordBonus: 5, minWordLength: 7, maxWordLength: 8, isInfinite: true },
 ];

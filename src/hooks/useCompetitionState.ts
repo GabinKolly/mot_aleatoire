@@ -2,15 +2,10 @@ import { useEffect, useCallback, useMemo, useReducer } from 'react';
 import { WORD_LISTS } from '../constants/wordLists';
 import { buildShuffledTiles } from '../utils/wordPicking';
 import {
-  COMPETITION_START_TIME,
-  COMPETITION_WORD_BONUS,
   COMPETITION_ALT_BONUS,
   COMPETITION_WORDS_PER_TIER,
-  COMPETITION_STARTING_WORD_LENGTH,
-  COMPETITION_MAX_WORD_LENGTH,
-  COMPETITION_MIN_WORD_BONUS,
-  COMPETITION_WORD_BONUS_DECAY,
   COMPETITION_WORD_LIST_PRESET,
+  COMPETITION_TIERS,
 } from '../constants/competitionConfig';
 import { TIER_TRANSITION_MS } from '../constants/timings';
 import { useWordPicking } from './useWordPicking';
@@ -66,16 +61,13 @@ type CompetitionAction =
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const totalTiers =
-  COMPETITION_MAX_WORD_LENGTH - COMPETITION_STARTING_WORD_LENGTH + 1;
+const totalTiers = COMPETITION_TIERS.length;
 
-const isMaxTier = (tierIndex: number): boolean => tierIndex >= totalTiers - 1;
+const getTierConfig = (tierIndex: number) =>
+  COMPETITION_TIERS[Math.min(tierIndex, totalTiers - 1)];
 
-const wordLengthForTier = (tierIndex: number): number =>
-  Math.min(
-    COMPETITION_STARTING_WORD_LENGTH + tierIndex,
-    COMPETITION_MAX_WORD_LENGTH
-  );
+const isInfiniteTier = (tierIndex: number): boolean =>
+  Boolean(getTierConfig(tierIndex).isInfinite);
 
 // ── Initial state ────────────────────────────────────────────────────────────
 
@@ -89,7 +81,7 @@ const resolveWordList = () => {
 
 const buildInitialState = (): CompetitionState => {
   const { allWords, bonusCheckWords } = resolveWordList();
-  const startLen = wordLengthForTier(0);
+  const initialTier = getTierConfig(0);
   return {
     allWords,
     bonusCheckWords,
@@ -106,12 +98,12 @@ const buildInitialState = (): CompetitionState => {
     allWordsCompleted: false,
     tierWordsFound: 0,
     tierIndex: 0,
-    wordBonus: COMPETITION_WORD_BONUS,
+    wordBonus: initialTier.wordBonus,
     tierTransitionBonus: null,
-    minWordLength: startLen,
-    maxWordLength: startLen,
-    startTime: COMPETITION_START_TIME,
-    bonusTime: COMPETITION_WORD_BONUS,
+    minWordLength: initialTier.minWordLength,
+    maxWordLength: initialTier.maxWordLength,
+    startTime: initialTier.startTime,
+    bonusTime: initialTier.wordBonus,
     alternativeWordBonusTime: COMPETITION_ALT_BONUS,
   };
 };
@@ -121,13 +113,13 @@ const buildInitialState = (): CompetitionState => {
 function reducer(state: CompetitionState, action: CompetitionAction): CompetitionState {
   switch (action.type) {
     case 'START_GAME': {
-      const startLen = wordLengthForTier(0);
+      const initialTier = getTierConfig(0);
       return {
         ...buildInitialState(),
-        timeLeft: COMPETITION_START_TIME,
+        timeLeft: initialTier.startTime,
         isPlaying: true,
-        minWordLength: startLen,
-        maxWordLength: startLen,
+        minWordLength: initialTier.minWordLength,
+        maxWordLength: initialTier.maxWordLength,
       };
     }
     case 'GIVE_UP':
@@ -162,32 +154,26 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
       let nextWordBonus = state.wordBonus;
       let nextTierTransitionBonus: number | null = null;
 
-      // In max tier, decay the word bonus after each word
-      if (isMaxTier(state.tierIndex)) {
-        nextWordBonus = Math.max(
-          COMPETITION_MIN_WORD_BONUS,
-          state.wordBonus - COMPETITION_WORD_BONUS_DECAY
-        );
-      }
-
       // Tier transition
       if (
         nextTierWordsFound >= COMPETITION_WORDS_PER_TIER &&
-        !isMaxTier(state.tierIndex)
+        !isInfiniteTier(state.tierIndex)
       ) {
         // Add remaining time (after word bonus) to score
         const timeBonus = nextTimeLeft;
         nextScore += timeBonus;
-        // Reset timer
-        nextTimeLeft = COMPETITION_START_TIME;
         // Advance tier
-        nextTierIndex = state.tierIndex + 1;
+        nextTierIndex = Math.min(state.tierIndex + 1, totalTiers - 1);
         nextTierWordsFound = 0;
+        const nextTierConfig = getTierConfig(nextTierIndex);
+        // Reset timer and bonus according to the new tier
+        nextTimeLeft = nextTierConfig.startTime;
+        nextWordBonus = nextTierConfig.wordBonus;
         // Signal tier transition for the animation
         nextTierTransitionBonus = timeBonus;
       }
 
-      const nextLen = wordLengthForTier(nextTierIndex);
+      const nextTierConfig = getTierConfig(nextTierIndex);
 
       return {
         ...state,
@@ -201,8 +187,8 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
         tierIndex: nextTierIndex,
         wordBonus: nextWordBonus,
         tierTransitionBonus: nextTierTransitionBonus,
-        minWordLength: nextLen,
-        maxWordLength: nextLen,
+        minWordLength: nextTierConfig.minWordLength,
+        maxWordLength: nextTierConfig.maxWordLength,
       };
     }
     case 'CLEAR_TIER_TRANSITION':
@@ -289,7 +275,7 @@ export function useCompetitionState() {
   );
 
   // Build the words found display text
-  const wordsFoundText = isMaxTier(state.tierIndex)
+  const wordsFoundText = isInfiniteTier(state.tierIndex)
     ? `${state.tierWordsFound}`
     : `${state.tierWordsFound}/${COMPETITION_WORDS_PER_TIER}`;
 

@@ -6,10 +6,7 @@ import LeaderboardTable from './LeaderboardTable';
 import MobileFooter from './MobileFooter';
 import SoloStatsRow from './SoloStatsRow';
 import { bandEndSelector, bandStartSelector } from '../constants/dom';
-import {
-  COMPETITION_STARTING_WORD_LENGTH,
-  COMPETITION_MAX_WORD_LENGTH,
-} from '../constants/competitionConfig';
+import { COMPETITION_TIERS } from '../constants/competitionConfig';
 import { useBandHighlightStyle } from '../hooks/useBandHighlightStyle';
 import { useCompetitionState } from '../hooks/useCompetitionState';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
@@ -31,8 +28,7 @@ const NOOP_DRAG_HANDLERS: DragHandlers = {
   onTouchEnd: NOOP,
 };
 
-const MAX_TIER_INDEX =
-  COMPETITION_MAX_WORD_LENGTH - COMPETITION_STARTING_WORD_LENGTH;
+const MAX_TIER_INDEX = COMPETITION_TIERS.length - 1;
 
 interface CompetitionGameProps {
   onBack: () => void;

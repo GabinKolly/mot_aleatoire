@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DragEvent, TouchEvent } from 'react';
 import type { Tile } from '../types/game';
 
@@ -17,6 +17,22 @@ export function useDragAndDrop({
   const [touchDragPosition, setTouchDragPosition] = useState<{ x: number; y: number } | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const dragImageElementRef = useRef<HTMLElement | null>(null);
+  const onDropCompleteRef = useRef(onDropComplete);
+  const dropCompleteTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    onDropCompleteRef.current = onDropComplete;
+  }, [onDropComplete]);
+
+  useEffect(
+    () => () => {
+      if (dropCompleteTimeoutRef.current !== null) {
+        window.clearTimeout(dropCompleteTimeoutRef.current);
+        dropCompleteTimeoutRef.current = null;
+      }
+    },
+    []
+  );
 
   const clearDesktopDragImage = () => {
     dragImageElementRef.current?.remove();
@@ -117,7 +133,16 @@ export function useDragAndDrop({
       return;
     }
 
-    onDropComplete();
+    if (dropCompleteTimeoutRef.current !== null) {
+      window.clearTimeout(dropCompleteTimeoutRef.current);
+    }
+
+    // Defer validation so it reads the latest tile order after React applies
+    // any in-flight reorder updates from the final drag movement.
+    dropCompleteTimeoutRef.current = window.setTimeout(() => {
+      dropCompleteTimeoutRef.current = null;
+      onDropCompleteRef.current();
+    }, 0);
   };
 
   const handleDragEnd = (): void => {

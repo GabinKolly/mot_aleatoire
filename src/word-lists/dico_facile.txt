@@ -261,7 +261,7 @@ antisémite
 antisémitisme
 anus
 anxiété
-aout
+août
 apaiser
 apercevoir
 aperçu
@@ -562,7 +562,7 @@ bénévole
 bénin
 berceau
 berger
-berne
+berner
 besoin
 bétail
 bête
@@ -3054,7 +3054,6 @@ lentement
 lequel
 lettre
 leur
-leurs
 lever
 levier
 liaison
@@ -3318,7 +3317,7 @@ mercier
 mercredi
 mercure
 merde
-mere
+mère
 mériter
 merlin
 merveille
@@ -4846,7 +4845,6 @@ septième
 séquence
 serbe
 sérénité
-serge
 sergent
 série
 sérieusement

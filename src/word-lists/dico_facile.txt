@@ -615,8 +615,7 @@ boeuf
 bof
 boire
 boisson
-boite
-boites
+boîte
 bol
 bombardement
 bombardier
@@ -1051,7 +1050,6 @@ coke
 col
 cola
 colère
-colin
 colis
 collaborateur
 collaboration
@@ -1597,9 +1595,7 @@ dépôt
 dépression
 depuis
 député
-der
 déranger
-derby
 dérive
 dernier
 dernièrement
@@ -4925,7 +4921,6 @@ social
 socialisme
 socialiste
 société
-socio
 sociologie
 sociologue
 socle

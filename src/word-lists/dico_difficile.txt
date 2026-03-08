@@ -6775,6 +6775,7 @@ colibri
 colifichet
 coliforme
 colimaçon
+colin
 colinéaire
 colinot
 colique
@@ -9447,6 +9448,7 @@ députation
 députer
 déqualifier
 déquiller
+der
 déracinement
 déraciner
 déraillement
@@ -9463,6 +9465,7 @@ dératisation
 dératiser
 dératiseur
 dérayer
+derby
 derche
 déréalisation
 derechef
@@ -29825,6 +29828,7 @@ socialiser
 socialo
 sociétaire
 sociétal
+socio
 sociobiologie
 socioculturel
 socioéconomique

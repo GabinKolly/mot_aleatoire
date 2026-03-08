@@ -1562,12 +1562,6 @@ a {
   box-shadow: inset 0 0 0 2px rgba(47, 47, 47, 0.16);
 }
 
-.mm-leaderboard__entry--highlight {
-  outline: 2px solid rgba(47, 47, 47, 0.3);
-  outline-offset: 1px;
-  box-shadow: inset 0 0 0 2px rgba(47, 47, 47, 0.2);
-}
-
 .mm-leaderboard__rank {
   width: var(--mm-leaderboard-chip-size);
   height: var(--mm-leaderboard-chip-size);

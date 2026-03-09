@@ -432,13 +432,54 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
         )}
 
         {showLeaderboard && (
-          <LeaderboardTable
-            entries={leaderboardEntries}
-            isLoading={leaderboardLoading || submitStatus === 'submitting'}
-            fetchError={leaderboardError}
-            currentPlayerId={playerId}
-            highlightRank={hasEnded ? playerRank : undefined}
-          />
+          <>
+            <LeaderboardTable
+              entries={leaderboardEntries}
+              isLoading={leaderboardLoading || submitStatus === 'submitting'}
+              fetchError={leaderboardError}
+              currentPlayerId={playerId}
+              highlightRank={hasEnded ? playerRank : undefined}
+            />
+            <section className="mm-how-to-play" aria-label="Comment jouer">
+              <h2 className="mm-how-to-play__title">Comment jouer</h2>
+              <ul className="mm-how-to-play__list">
+                <li className="mm-how-to-play__item">
+                  Des mots mélangés apparaissent un par un, et vous devez retrouver le mot
+                  d&apos;origine et remettre les lettres dans l&apos;ordre avant la fin du chrono.
+                </li>
+                <li className="mm-how-to-play__item">
+                  Chaque mot que vous trouvez vous
+                  donne 15 secondes supplémentaires et un nombre de points équivalent à la
+                  longueur du mot.
+                </li>
+                <li className="mm-how-to-play__item">
+                  Si vous ne trouvez pas le mot à temps, la partie se termine.
+                </li>
+                <li className="mm-how-to-play__item">
+                  Les mots peuvent être n&apos;importe quel mot commun en français : verbe à l&apos;infinitif,
+                  adjectif, onomatopée, langage familier...
+                </li>
+                <li className="mm-how-to-play__item">
+                  Il n&apos;y aura pas de verbe conjugué, de pluriel ou de féminin (sauf noms communs comme
+                  "arrivée" ou mots existant seulement au pluriel comme "prémices").
+                </li>
+                <li className="mm-how-to-play__item">
+                  Si vous écrivez un mot reconnu mais différent de celui attendu, il s&apos;illuminera
+                  en jaune et vous donnera un petit bonus de temps, mais il ne sera pas validé.
+                </li>
+                <li className="mm-how-to-play__item">
+                  Tous les 10 mots, vous passez au niveau suivant : le temps restant est ajouté à votre score,
+                  puis le chrono revient à 45 secondes et la
+                  longueur des mots augmente.
+                </li>
+                <li className="mm-how-to-play__item">
+                  À partir du niveau 6, les mots ne deviennent pas plus longs, mais le temps de départ
+                  et les bonus de temps diminuent. Le niveau 8 est le niveau final :
+                  serez-vous la première personne à l&apos;atteindre ?
+                </li>
+              </ul>
+            </section>
+          </>
         )}
       </div>
       <MobileFooter />

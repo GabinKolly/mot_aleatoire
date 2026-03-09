@@ -1622,8 +1622,6 @@ désireux
 désolé
 désordre
 désormais
-desquelles
-desquels
 dessert
 dessin
 dessinateur
@@ -3345,8 +3343,6 @@ micro
 midi
 miel
 mien
-mienne
-miens
 mieux
 mignon
 migration
@@ -4093,6 +4089,7 @@ préfet
 préjudice
 prélèvement
 préliminaire
+prémices
 premier
 premièrement
 prendre
@@ -4298,7 +4295,6 @@ quelconque
 quelque
 quelquefois
 quelques
-quels
 question
 questionnaire
 quête

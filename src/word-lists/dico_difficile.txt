@@ -7751,6 +7751,7 @@ costumer
 costumier
 cosy
 cotation
+cote
 coteau
 côtelé
 côtelette
@@ -19819,7 +19820,6 @@ maniaque
 maniaquerie
 manichéen
 maniement
-manier
 maniérisme
 maniériste
 manieur

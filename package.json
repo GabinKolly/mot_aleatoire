@@ -8,6 +8,8 @@
     "dev:partykit": "npx partykit dev",
     "deploy:partykit": "npx partykit deploy",
     "build": "vite build",
+    "build:cf": "vite build --base=/",
+    "build:gh": "vite build --base=/mot_aleatoire/",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

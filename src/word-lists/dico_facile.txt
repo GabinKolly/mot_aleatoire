@@ -1328,7 +1328,7 @@ corruption
 corse
 cortège
 costume
-cote
+côte
 cotisation
 coton
 cou
@@ -1776,7 +1776,6 @@ donc
 donner
 dont
 doré
-dorée
 dorénavant
 dormir
 dose
@@ -3167,7 +3166,7 @@ maintien
 maire
 mairie
 maison
-maitre
+maître
 maîtresse
 maîtriser
 majesté
@@ -3195,6 +3194,7 @@ manche
 mandat
 manga
 manger
+manier
 manière
 manif
 manifestation
@@ -3990,7 +3990,7 @@ poitrine
 poivre
 poker
 polaire
-pole
+pôle
 polémique
 poli
 police

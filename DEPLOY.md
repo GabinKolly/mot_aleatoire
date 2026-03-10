@@ -133,7 +133,11 @@ Remplacer `VOTRE_USERNAME` par votre nom d'utilisateur GitHub (celui utilisé po
 ### Build
 
 ```bash
-npm run build
+# Cloudflare Pages / Vercel / Netlify (base `/`)
+npm run build:cf
+
+# GitHub Pages (base `/mot_aleatoire/`)
+npm run build:gh
 ```
 
 Le site statique est généré dans le dossier `dist/`.
@@ -142,7 +146,12 @@ Le site statique est généré dans le dossier `dist/`.
 
 #### GitHub Pages
 
-Le projet est déjà configuré avec `base: "/mot_aleatoire/"` dans `vite.config.js`.
+Le `base` n'est pas défini dans `vite.config.js`.  
+Utiliser le script dédié GitHub Pages :
+
+```bash
+npm run build:gh
+```
 
 1. Pousser le contenu de `dist/` vers la branche `gh-pages`, ou configurer GitHub Actions pour le build automatique.
 
@@ -152,7 +161,7 @@ Le projet est déjà configuré avec `base: "/mot_aleatoire/"` dans `vite.config
 
    ```yaml
    - name: Build
-     run: npm run build
+     run: npm run build:gh
      env:
        VITE_PARTYKIT_HOST: mot-aleatoire.VOTRE_USERNAME.partykit.dev
    ```
@@ -162,14 +171,14 @@ Le projet est déjà configuré avec `base: "/mot_aleatoire/"` dans `vite.config
 1. Importer le dépôt sur [vercel.com](https://vercel.com).
 2. Dans Settings → Environment Variables, ajouter :
    - `VITE_PARTYKIT_HOST` = `mot-aleatoire.VOTRE_USERNAME.partykit.dev`
-3. Vercel détecte automatiquement Vite et lance `npm run build`.
+3. Build command : `npm run build:cf`.
 
 #### Netlify
 
 1. Importer le dépôt sur [netlify.com](https://netlify.com).
 2. Dans Site Settings → Environment Variables, ajouter :
    - `VITE_PARTYKIT_HOST` = `mot-aleatoire.VOTRE_USERNAME.partykit.dev`
-3. Build command : `npm run build`, publish directory : `dist`.
+3. Build command : `npm run build:cf`, publish directory : `dist`.
 
 ---
 
@@ -196,5 +205,5 @@ Le frontend utilise `localhost:1999` par défaut pour le serveur PartyKit en dé
 | Login PartyKit | `npx partykit login` |
 | Déployer le serveur | `npm run deploy:partykit` |
 | Configurer l'URL | Créer `.env.production.local` avec `VITE_PARTYKIT_HOST=...` |
-| Build le frontend | `npm run build` |
+| Build le frontend | `npm run build:cf` (Cloudflare/Vercel/Netlify) ou `npm run build:gh` (GitHub Pages) |
 | Déployer le frontend | Pousser `dist/` vers votre hébergeur |

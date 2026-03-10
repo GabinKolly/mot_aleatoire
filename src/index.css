@@ -1678,8 +1678,8 @@ a {
 .mm-how-to-play {
   width: 100%;
   max-width: 26rem;
-  margin: 0.3rem auto 0;
-  padding: 0.7rem 0.85rem 0.8rem;
+  margin: 0.3rem auto 0.1rem;
+  padding: 0.78rem 0.9rem 0.82rem;
   border-radius: 1rem;
   background: var(--mm-blue);
   color: var(--mm-ink);
@@ -1687,27 +1687,71 @@ a {
 
 .mm-how-to-play__title {
   margin: 0;
-  font-size: 1.08rem;
-  font-weight: 700;
+  font-size: 1.22rem;
+  font-weight: 800;
   line-height: 1.1;
   text-align: center;
+  text-transform: uppercase;
 }
 
-.mm-how-to-play__list {
-  margin: 0.35rem 0 0;
-  padding-left: 1.2rem;
+.mm-how-to-play__content {
+  margin-top: 0.34rem;
 }
 
-.mm-how-to-play__item {
+.mm-how-to-play__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.mm-how-to-play__paragraph {
   margin: 0;
-  font-size: 0.81rem;
-  font-weight: 600;
-  line-height: 1.28;
+  font-size: 0.83rem;
+  font-weight: 700;
+  line-height: 1.31;
   text-align: left;
 }
 
-.mm-how-to-play__item + .mm-how-to-play__item {
-  margin-top: 0.38rem;
+.mm-how-to-play__paragraph--preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.mm-how-to-play__toggle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0.52rem auto 0;
+  margin-inline: auto;
+  color: var(--mm-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.83rem;
+  line-height: 1.31;
+  cursor: pointer;
+  width: max-content;
+  text-align: center;
+}
+
+.mm-how-to-play__toggle-icon {
+  font-size: 0.83rem;
+  line-height: 1.31;
+}
+
+.mm-how-to-play__toggle:focus-visible {
+  outline: 3px solid rgba(47, 47, 47, 0.2);
+  outline-offset: 4px;
+  border-radius: 0.5rem;
+}
+
+.mm-how-to-play--expanded .mm-how-to-play__toggle {
+  margin-top: 0.62rem;
 }
 
 /* ── Name prompt ─────────────────────────────────────────────── */

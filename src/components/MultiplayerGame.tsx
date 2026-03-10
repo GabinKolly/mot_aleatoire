@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
+import AppTitle from './AppTitle';
 import GameScreen from './GameScreen';
 import Lobby from './Lobby';
 import MobileFooter from './MobileFooter';
@@ -74,10 +75,7 @@ export default function MultiplayerGame({ onBack }: MultiplayerGameProps) {
             className="mm-title-button"
             aria-label="Retour au menu principal"
           >
-            <span className="mm-title mm-title--solo">
-              <span>Mot</span>
-              <span>mélangé</span>
-            </span>
+            <AppTitle variant="solo" />
           </button>
         </div>
 

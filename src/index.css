@@ -26,6 +26,7 @@
   --mm-danger: #ff5757;
   --mm-ink: #2f2f2f;
   --mm-bg: #ffffff;
+  --mm-title-line-shift-right: 0.24em;
   --mm-font-title: 'Hornbill', 'Georgia', serif;
   --mm-font-ui: 'Quicksand', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
@@ -125,6 +126,15 @@ a {
   line-height: 0.92;
   letter-spacing: 0;
   color: var(--mm-ink);
+}
+
+.mm-title__line {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.mm-title__line--shift-right {
+  margin-left: var(--mm-title-line-shift-right);
 }
 
 .mm-title--menu {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { RotateCcw, Settings as SettingsIcon, Users } from 'lucide-react';
+import AppTitle from './AppTitle';
 import GameScreen from './GameScreen';
 import type { DragHandlers } from './GameScreen';
 import IconButton from './IconButton';
@@ -126,10 +127,7 @@ export default function SoloGame({ onBack, onOpenMultiplayer }: SoloGameProps) {
             className="mm-title-button"
             aria-label="Retour au menu principal"
           >
-            <span className="mm-title mm-title--solo">
-              <span>Mot</span>
-              <span>mélangé</span>
-            </span>
+            <AppTitle variant="solo" />
           </button>
 
           <div className="mm-solo-header__icons" aria-label="Raccourcis">

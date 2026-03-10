@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RotateCcw, Shuffle } from 'lucide-react';
+import AppTitle from './AppTitle';
 import GameScreen from './GameScreen';
 import type { DragHandlers } from './GameScreen';
 import LeaderboardTable from './LeaderboardTable';
@@ -223,10 +224,7 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
             className="mm-title-button"
             aria-label="Retour au menu principal"
           >
-            <span className="mm-title mm-title--solo">
-              <span>Mot</span>
-              <span>mélangé</span>
-            </span>
+            <AppTitle variant="solo" />
           </button>
         </div>
 
@@ -465,7 +463,7 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                 </li>
                 <li className="mm-how-to-play__item">
                   Si vous écrivez un mot reconnu mais différent de celui attendu, il s&apos;illuminera
-                  en jaune et vous donnera un petit bonus de temps, mais il ne sera pas validé.
+                  en jaune et vous donnera un bonus de temps de 5 secondes, mais il ne sera pas validé.
                 </li>
                 <li className="mm-how-to-play__item">
                   Tous les 10 mots, vous passez au niveau suivant : le temps restant est ajouté à votre score,

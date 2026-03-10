@@ -1,3 +1,4 @@
+import AppTitle from './AppTitle';
 import MobileFooter from './MobileFooter';
 import ModeSelection from './ModeSelection';
 
@@ -16,10 +17,7 @@ export default function MainMenuScreen({
     <div className="mm-page-shell">
       <div className="mm-page-shell__content mm-menu-layout">
         <div className="mm-menu-title-wrap">
-          <h1 className="mm-title mm-title--menu">
-            <span>Mot</span>
-            <span>mélangé</span>
-          </h1>
+          <AppTitle as="h1" variant="menu" />
         </div>
 
         <div className="mm-menu-actions-wrap">

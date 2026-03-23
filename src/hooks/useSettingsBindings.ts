@@ -23,6 +23,7 @@ export function useSettingsBindings({
     setStartTime,
     setBonusTime,
     setAlternativeWordBonusTime,
+    setAnswerValidationMode,
     resetSettingsToStandardForCurrentList,
     clearHighScoreForCurrentList,
     setMinWordLength,
@@ -153,6 +154,16 @@ export function useSettingsBindings({
     resetSettingsToStandardForCurrentList,
   ]);
 
+  const handleAnswerValidationModeChange = useCallback(
+    (mode: 'loose' | 'strict') => {
+      if (state.answerValidationMode === mode) {
+        return;
+      }
+      setAnswerValidationMode(mode);
+    },
+    [state.answerValidationMode, setAnswerValidationMode]
+  );
+
   return {
     wordListName: state.wordListName,
     wordsCount: state.words.length,
@@ -180,6 +191,8 @@ export function useSettingsBindings({
     alternativeWordBonusTimeInput: alternativeWordBonusTimeInput.inputValue,
     onAlternativeWordBonusTimeChange: alternativeWordBonusTimeInput.onChange,
     onAlternativeWordBonusTimeBlur: alternativeWordBonusTimeInput.onBlur,
+    answerValidationMode: state.answerValidationMode,
+    onAnswerValidationModeChange: handleAnswerValidationModeChange,
     minWordLength: state.minWordLength,
     minWordLengthInput: minWordLengthInput.inputValue,
     onMinWordLengthChange: minWordLengthInput.onChange,

@@ -6143,6 +6143,7 @@ rituel
 rivage
 rival
 rivalité
+rive
 river
 rivière
 riz

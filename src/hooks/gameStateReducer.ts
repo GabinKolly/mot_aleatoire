@@ -6,6 +6,7 @@ import {
   DEFAULT_ALT_BONUS_TIME,
 } from '../constants/gameConfig';
 import type { AddedWordList, GameAction, GameSettings, GameState, Tile } from '../types/game';
+import { mergeUsedWords } from '../utils/anagramWordPicking';
 
 export type TileUpdater = Tile[] | ((tiles: Tile[]) => Tile[]);
 
@@ -22,6 +23,7 @@ const DEFAULT_TIME_SETTINGS = {
   startTime: DEFAULT_START_TIME,
   bonusTime: DEFAULT_BONUS_TIME,
   alternativeWordBonusTime: DEFAULT_ALT_BONUS_TIME,
+  answerValidationMode: 'loose' as const,
 };
 
 export const buildListScoreKey = ({
@@ -134,6 +136,7 @@ export const getInitialState = (initialPresetKey: string): GameState => {
     allWords: resolvedList.allWords,
     bonusCheckWords: resolvedList.bonusCheckWords,
     currentWord: '',
+    currentAcceptedWords: [],
     tiles: [],
     usedWords: [],
     isCorrect: false,
@@ -158,6 +161,7 @@ export const getInitialState = (initialPresetKey: string): GameState => {
     alternativeWordBonusTime: persistedSettings?.alternativeWordBonusTime ?? 5,
     minWordLength: persistedSettings?.minWordLength ?? 4,
     maxWordLength: persistedSettings?.maxWordLength ?? 7,
+    answerValidationMode: persistedSettings?.answerValidationMode ?? 'loose',
   };
 };
 
@@ -177,6 +181,7 @@ const buildRoundResetState = (
   lastGameWasScoreEligible: false,
   timeLeft: 0,
   currentWord: '',
+  currentAcceptedWords: [],
   tiles: [],
   isCorrect: false,
   isBonusWord: false,
@@ -205,6 +210,8 @@ export function reducer(state: GameState, action: GameAction): GameState {
       return buildRoundResetState(state, { bonusTime: action.payload });
     case 'SET_ALT_BONUS_TIME':
       return buildRoundResetState(state, { alternativeWordBonusTime: action.payload });
+    case 'SET_ANSWER_VALIDATION_MODE':
+      return buildRoundResetState(state, { answerValidationMode: action.payload });
     case 'CLEAR_HIGH_SCORE_FOR_CURRENT_LIST': {
       const listKey = buildListScoreKey({
         selectedPreset: state.selectedPreset,
@@ -292,7 +299,8 @@ export function reducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         currentWord: action.payload.word,
-        usedWords: [...state.usedWords, action.payload.word],
+        currentAcceptedWords: action.payload.acceptedWords,
+        usedWords: mergeUsedWords(state.usedWords, action.payload.acceptedWords),
         tiles: action.payload.tiles,
         isCorrect: false,
         isBonusWord: false,
@@ -308,11 +316,14 @@ export function reducer(state: GameState, action: GameAction): GameState {
     case 'CORRECT_WORD':
       return {
         ...state,
+        currentWord: action.payload.solvedWord,
         isCorrect: true,
         isBonusWord: false,
-        tiles: state.currentWord.split('').map((letter, index) => ({ letter, id: index })),
+        tiles: action.payload.solvedWord
+          .split('')
+          .map((letter, index) => ({ letter, id: index })),
         wordsFound: state.wordsFound + 1,
-        score: state.score + state.currentWord.length,
+        score: state.score + action.payload.solvedWord.length,
         timeLeft: state.timeLeft + state.bonusTime,
       };
     case 'AWARD_ALT_BONUS':

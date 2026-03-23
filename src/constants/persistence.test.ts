@@ -32,6 +32,7 @@ describe('loadPersistedConfig', () => {
         alternativeWordBonusTime: 3,
         minWordLength: 4,
         maxWordLength: 8,
+        answerValidationMode: 'strict',
       },
       list: { selectedPreset: 'hard', selectedAddedListId: null, added: [] },
       highScores: { 'preset:hard': 42 },
@@ -41,6 +42,7 @@ describe('loadPersistedConfig', () => {
     const result = loadPersistedConfig({ presetKeys: PRESET_KEYS });
     expect(result?.settings.startTime).toBe(60);
     expect(result?.settings.bonusTime).toBe(5);
+    expect(result?.settings.answerValidationMode).toBe('strict');
     expect(result?.list.selectedPreset).toBe('hard');
     expect(result?.highScores['preset:hard']).toBe(42);
   });
@@ -54,6 +56,7 @@ describe('loadPersistedConfig', () => {
         alternativeWordBonusTime: 10000, // max is 9999 → clamped to 9999
         minWordLength: 4,
         maxWordLength: 7,
+        answerValidationMode: 'strict',
       },
       list: { selectedPreset: 'default', selectedAddedListId: null, added: [] },
       highScores: {},
@@ -64,12 +67,13 @@ describe('loadPersistedConfig', () => {
     expect(result?.settings.startTime).toBe(1);
     expect(result?.settings.bonusTime).toBe(0);
     expect(result?.settings.alternativeWordBonusTime).toBe(9999);
+    expect(result?.settings.answerValidationMode).toBe('strict');
   });
 
   it('rejects a selectedPreset that is not in the provided preset keys', () => {
     const stored = {
       version: 3,
-      settings: { startTime: 45, bonusTime: 10, alternativeWordBonusTime: 5, minWordLength: 4, maxWordLength: 7 },
+      settings: { startTime: 45, bonusTime: 10, alternativeWordBonusTime: 5, minWordLength: 4, maxWordLength: 7, answerValidationMode: 'loose' },
       list: { selectedPreset: 'unknownList', selectedAddedListId: null, added: [] },
       highScores: {},
     };
@@ -90,6 +94,7 @@ describe('loadPersistedConfig', () => {
     const result = loadPersistedConfig({ presetKeys: PRESET_KEYS });
     expect(result).not.toBeNull();
     expect(result?.settings.startTime).toBe(30);
+    expect(result?.settings.answerValidationMode).toBe('loose');
     expect(result?.list.selectedPreset).toBe('hard');
     expect(result?.highScores).toEqual({});
   });
@@ -124,7 +129,7 @@ describe('loadPersistedConfig', () => {
   it('strips negative or non-finite values from highScores', () => {
     const stored = {
       version: 3,
-      settings: { startTime: 45, bonusTime: 10, alternativeWordBonusTime: 5, minWordLength: 4, maxWordLength: 7 },
+      settings: { startTime: 45, bonusTime: 10, alternativeWordBonusTime: 5, minWordLength: 4, maxWordLength: 7, answerValidationMode: 'loose' },
       list: { selectedPreset: 'default', selectedAddedListId: null, added: [] },
       highScores: { 'preset:default': 100, 'preset:hard': -5, 'preset:bad': 'NaN' },
     };
@@ -134,6 +139,25 @@ describe('loadPersistedConfig', () => {
     expect(result?.highScores['preset:default']).toBe(100);
     expect(result?.highScores['preset:hard']).toBeUndefined();
     expect(result?.highScores['preset:bad']).toBeUndefined();
+  });
+
+  it('defaults answer validation mode to loose when missing', () => {
+    const stored = {
+      version: 3,
+      settings: {
+        startTime: 45,
+        bonusTime: 10,
+        alternativeWordBonusTime: 5,
+        minWordLength: 4,
+        maxWordLength: 7,
+      },
+      list: { selectedPreset: 'default', selectedAddedListId: null, added: [] },
+      highScores: {},
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+
+    const result = loadPersistedConfig({ presetKeys: PRESET_KEYS });
+    expect(result?.settings.answerValidationMode).toBe('loose');
   });
 });
 

@@ -14,10 +14,10 @@ import {
 } from '../constants/timings';
 import {
   buildAnagramGroupIndex,
-  getCompetitionWordCheckResult,
-  mergeUsedCompetitionWords,
-  pickCompetitionWord,
-} from '../utils/competitionWordPicking';
+  getWordCheckResult,
+  mergeUsedWords,
+  pickWordWithAcceptedAnagrams,
+} from '../utils/anagramWordPicking';
 import type { Tile } from '../types/game';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ export function competitionReducer(
         ...state,
         currentWord: action.payload.word,
         currentAcceptedWords: action.payload.acceptedWords,
-        usedWords: mergeUsedCompetitionWords(state.usedWords, action.payload.acceptedWords),
+        usedWords: mergeUsedWords(state.usedWords, action.payload.acceptedWords),
         tiles: action.payload.tiles,
         isCorrect: false,
         isBonusWord: false,
@@ -274,7 +274,7 @@ export function useCompetitionState() {
       return;
     }
 
-    const selection = pickCompetitionWord(availableWords, words, anagramGroups);
+    const selection = pickWordWithAcceptedAnagrams(availableWords, words, anagramGroups);
     if (!selection) {
       dispatch({ type: 'NO_MORE_WORDS' });
       return;
@@ -294,7 +294,7 @@ export function useCompetitionState() {
     }
 
     const currentTileWord = state.tiles.map((tile) => tile.letter).join('');
-    const result = getCompetitionWordCheckResult({
+    const result = getWordCheckResult({
       currentTileWord,
       currentWord: state.currentWord,
       acceptedWordsSet: currentAcceptedWordsSet,

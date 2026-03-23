@@ -32,7 +32,8 @@ export function useGameState({
     state.bonusTime === currentListStandardSettings.bonusTime &&
     state.alternativeWordBonusTime === currentListStandardSettings.alternativeWordBonusTime &&
     state.minWordLength === currentListStandardSettings.minWordLength &&
-    state.maxWordLength === currentListStandardSettings.maxWordLength;
+    state.maxWordLength === currentListStandardSettings.maxWordLength &&
+    state.answerValidationMode === currentListStandardSettings.answerValidationMode;
 
   useEffect(() => {
     if (!state.isPlaying) {
@@ -57,6 +58,7 @@ export function useGameState({
         alternativeWordBonusTime: state.alternativeWordBonusTime,
         minWordLength: state.minWordLength,
         maxWordLength: state.maxWordLength,
+        answerValidationMode: state.answerValidationMode,
       },
       list: {
         selectedPreset: state.selectedPreset,
@@ -71,6 +73,7 @@ export function useGameState({
     state.alternativeWordBonusTime,
     state.minWordLength,
     state.maxWordLength,
+    state.answerValidationMode,
     state.selectedPreset,
     state.selectedAddedListId,
     state.addedWordLists,
@@ -173,6 +176,11 @@ export function useGameState({
     (value: number) => dispatch({ type: 'SET_ALT_BONUS_TIME', payload: value }),
     []
   );
+  const setAnswerValidationMode = useCallback(
+    (value: 'loose' | 'strict') =>
+      dispatch({ type: 'SET_ANSWER_VALIDATION_MODE', payload: value }),
+    []
+  );
 
   const resetSettingsToStandardForCurrentList = useCallback(() => {
     resetBonusRef();
@@ -209,8 +217,20 @@ export function useGameState({
     if (!state.isPlaying || state.isCorrect || state.currentWord.length < 2) {
       return;
     }
-    dispatch({ type: 'SET_TILES', payload: buildShuffledTiles(state.currentWord) });
-  }, [state.currentWord, state.isCorrect, state.isPlaying]);
+    dispatch({
+      type: 'SET_TILES',
+      payload: buildShuffledTiles(state.currentWord, Math.random, {
+        forbiddenWords:
+          state.answerValidationMode === 'loose' ? state.currentAcceptedWords : undefined,
+      }),
+    });
+  }, [
+    state.currentWord,
+    state.currentAcceptedWords,
+    state.answerValidationMode,
+    state.isCorrect,
+    state.isPlaying,
+  ]);
 
   const actions = useMemo(
     () => ({
@@ -225,6 +245,7 @@ export function useGameState({
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,
+      setAnswerValidationMode,
       resetSettingsToStandardForCurrentList,
       clearHighScoreForCurrentList,
       setMinWordLength,
@@ -245,6 +266,7 @@ export function useGameState({
       setStartTime,
       setBonusTime,
       setAlternativeWordBonusTime,
+      setAnswerValidationMode,
       resetSettingsToStandardForCurrentList,
       clearHighScoreForCurrentList,
       setMinWordLength,

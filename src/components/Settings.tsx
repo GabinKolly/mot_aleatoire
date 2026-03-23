@@ -34,6 +34,8 @@ export default function Settings({
   alternativeWordBonusTimeInput,
   onAlternativeWordBonusTimeChange,
   onAlternativeWordBonusTimeBlur,
+  answerValidationMode,
+  onAnswerValidationModeChange,
   minWordLength,
   minWordLengthInput,
   onMinWordLengthChange,
@@ -98,6 +100,19 @@ export default function Settings({
     },
   ];
 
+  const answerValidationOptions = [
+    {
+      key: 'loose',
+      label: 'Souple',
+      description: 'Les anagrammes de la même liste sont acceptés.',
+    },
+    {
+      key: 'strict',
+      label: 'Strict',
+      description: 'Seul le mot choisi est validé.',
+    },
+  ] as const;
+
   return (
     <div className="mb-6 p-4 bg-gray-50 rounded-lg text-black">
       <h2 className="text-lg font-semibold mb-4 text-black">Paramètres</h2>
@@ -132,6 +147,24 @@ export default function Settings({
               onChange={field.onChange}
               onBlur={field.onBlur}
             />
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-6 pb-6">
+        <h3 className="text-md font-medium mb-3 text-black">Validation</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {answerValidationOptions.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => onAnswerValidationModeChange(option.key)}
+              aria-pressed={answerValidationMode === option.key}
+              className="btn btn-choice btn-sm w-full flex-col items-start text-left"
+            >
+              <span className="block">{option.label}</span>
+              <span className="block text-xs opacity-90">{option.description}</span>
+            </button>
           ))}
         </div>
       </div>

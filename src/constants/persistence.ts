@@ -52,6 +52,8 @@ const buildUniqueName = (rawName: unknown, usedNames: Set<string>): string => {
 const sanitizeSettings = (rawSettings: ParsedObject = {}): GameSettings => {
   const minWordLength = clampInt(rawSettings.minWordLength, 2, 100, 4);
   const maxWordLength = clampInt(rawSettings.maxWordLength, minWordLength, 100, 7);
+  const answerValidationMode =
+    rawSettings.answerValidationMode === 'strict' ? 'strict' : 'loose';
 
   return {
     startTime: clampInt(rawSettings.startTime, 1, 9999, 45),
@@ -64,6 +66,7 @@ const sanitizeSettings = (rawSettings: ParsedObject = {}): GameSettings => {
     ),
     minWordLength,
     maxWordLength,
+    answerValidationMode,
   };
 };
 

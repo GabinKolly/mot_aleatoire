@@ -3,22 +3,30 @@ import type { Dispatch } from 'react';
 import { buildShuffledTiles, pickWordFromList } from '../utils/wordPicking';
 import { NEXT_WORD_DELAY_MS, BONUS_ANIMATION_MS } from '../constants/timings';
 import type { Tile } from '../types/game';
+import {
+  buildAnagramGroupIndex,
+  getWordCheckResult,
+  pickWordWithAcceptedAnagrams,
+} from '../utils/anagramWordPicking';
+import type { AnswerValidationMode } from '../types/game';
 
 export interface WordPickingState {
   allWords: string[];
   bonusCheckWords: string[];
   minWordLength: number;
   maxWordLength: number;
+  answerValidationMode: AnswerValidationMode;
   usedWords: string[];
   tiles: Tile[];
   currentWord: string;
+  currentAcceptedWords: string[];
   isPlaying: boolean;
 }
 
 export type WordPickingAction =
   | { type: 'NO_MORE_WORDS' }
-  | { type: 'SET_NEXT_WORD'; payload: { word: string; tiles: Tile[] } }
-  | { type: 'CORRECT_WORD' }
+  | { type: 'SET_NEXT_WORD'; payload: { word: string; acceptedWords: string[]; tiles: Tile[] } }
+  | { type: 'CORRECT_WORD'; payload: { solvedWord: string } }
   | { type: 'AWARD_ALT_BONUS' }
   | { type: 'CLEAR_ALT_BONUS' };
 
@@ -39,6 +47,11 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
     () => new Set(state.bonusCheckWords),
     [state.bonusCheckWords]
   );
+  const currentAcceptedWordsSet = useMemo(
+    () => new Set(state.currentAcceptedWords),
+    [state.currentAcceptedWords]
+  );
+  const anagramGroups = useMemo(() => buildAnagramGroupIndex(words), [words]);
 
   const resetBonusRef = useCallback(() => {
     bonusAwardedWordsRef.current = new Set();
@@ -53,16 +66,30 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
       return;
     }
 
+    resetBonusRef();
+    if (state.answerValidationMode === 'loose') {
+      const selection = pickWordWithAcceptedAnagrams(availableWords, words, anagramGroups);
+      if (!selection) {
+        dispatch({ type: 'NO_MORE_WORDS' });
+        return;
+      }
+
+      dispatch({ type: 'SET_NEXT_WORD', payload: selection });
+      return;
+    }
+
     const word = pickWordFromList(availableWords, words);
     if (!word) {
       dispatch({ type: 'NO_MORE_WORDS' });
       return;
     }
 
-    resetBonusRef();
     const nextTiles = buildShuffledTiles(word);
-    dispatch({ type: 'SET_NEXT_WORD', payload: { word, tiles: nextTiles } });
-  }, [state.usedWords, words, dispatch, resetBonusRef]);
+    dispatch({
+      type: 'SET_NEXT_WORD',
+      payload: { word, acceptedWords: [word], tiles: nextTiles },
+    });
+  }, [state.usedWords, state.answerValidationMode, words, anagramGroups, dispatch, resetBonusRef]);
 
   useEffect(() => {
     pickNewWordRef.current = pickNewWord;
@@ -75,24 +102,28 @@ export function useWordPicking(state: WordPickingState, dispatch: Dispatch<WordP
 
     const currentTileWord = state.tiles.map((tile) => tile.letter).join('');
 
-    if (currentTileWord === state.currentWord && state.currentWord.length > 0) {
+    const result = getWordCheckResult({
+      currentTileWord,
+      currentWord: state.currentWord,
+      acceptedWordsSet: currentAcceptedWordsSet,
+      bonusCheckWordsSet,
+      filteredWordsSet: wordsSet,
+      bonusAwardedWords: bonusAwardedWordsRef.current,
+    });
+
+    if (result === 'correct') {
       currentWordScoredRef.current = true;
-      dispatch({ type: 'CORRECT_WORD' });
+      dispatch({ type: 'CORRECT_WORD', payload: { solvedWord: currentTileWord } });
       setTimeout(() => pickNewWordRef.current(), NEXT_WORD_DELAY_MS);
       return;
     }
 
-    if (
-      state.currentWord.length > 0 &&
-      currentTileWord !== state.currentWord &&
-      (bonusCheckWordsSet.has(currentTileWord) || wordsSet.has(currentTileWord)) &&
-      !bonusAwardedWordsRef.current.has(currentTileWord)
-    ) {
+    if (result === 'bonus') {
       dispatch({ type: 'AWARD_ALT_BONUS' });
       bonusAwardedWordsRef.current.add(currentTileWord);
       setTimeout(() => dispatch({ type: 'CLEAR_ALT_BONUS' }), BONUS_ANIMATION_MS);
     }
-  }, [state.tiles, state.currentWord, bonusCheckWordsSet, wordsSet, dispatch]);
+  }, [state.tiles, state.currentWord, currentAcceptedWordsSet, bonusCheckWordsSet, wordsSet, dispatch]);
 
   useEffect(() => {
     if (state.isPlaying && state.currentWord === '') {

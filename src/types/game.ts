@@ -9,18 +9,22 @@ export interface AddedWordList {
   words: string[];
 }
 
+export type AnswerValidationMode = 'loose' | 'strict';
+
 export interface GameSettings {
   startTime: number;
   bonusTime: number;
   alternativeWordBonusTime: number;
   minWordLength: number;
   maxWordLength: number;
+  answerValidationMode: AnswerValidationMode;
 }
 
 export interface GameState extends GameSettings {
   allWords: string[];
   bonusCheckWords: string[];
   currentWord: string;
+  currentAcceptedWords: string[];
   tiles: Tile[];
   usedWords: string[];
   isCorrect: boolean;
@@ -47,6 +51,7 @@ export type GameAction =
   | { type: 'SET_START_TIME'; payload: number }
   | { type: 'SET_BONUS_TIME'; payload: number }
   | { type: 'SET_ALT_BONUS_TIME'; payload: number }
+  | { type: 'SET_ANSWER_VALIDATION_MODE'; payload: AnswerValidationMode }
   | { type: 'CLEAR_HIGH_SCORE_FOR_CURRENT_LIST' }
   | { type: 'RESET_SETTINGS_TO_STANDARD' }
   | { type: 'SET_MIN_WORD_LENGTH'; payload: number }
@@ -59,9 +64,9 @@ export type GameAction =
   | { type: 'START_GAME'; payload?: { isScoreEligible: boolean } }
   | { type: 'GIVE_UP' }
   | { type: 'SET_TILES'; payload: Tile[] | ((tiles: Tile[]) => Tile[]) }
-  | { type: 'SET_NEXT_WORD'; payload: { word: string; tiles: Tile[] } }
+  | { type: 'SET_NEXT_WORD'; payload: { word: string; acceptedWords: string[]; tiles: Tile[] } }
   | { type: 'NO_MORE_WORDS' }
-  | { type: 'CORRECT_WORD' }
+  | { type: 'CORRECT_WORD'; payload: { solvedWord: string } }
   | { type: 'AWARD_ALT_BONUS' }
   | { type: 'CLEAR_ALT_BONUS' }
   | { type: 'TICK' }

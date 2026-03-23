@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useReducer } from 'react';
+import { useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
 import { WORD_LISTS } from '../constants/wordLists';
 import { buildShuffledTiles } from '../utils/wordPicking';
 import {
@@ -7,8 +7,17 @@ import {
   COMPETITION_WORD_LIST_PRESET,
   COMPETITION_TIERS,
 } from '../constants/competitionConfig';
-import { TIER_TRANSITION_MS } from '../constants/timings';
-import { useWordPicking } from './useWordPicking';
+import {
+  BONUS_ANIMATION_MS,
+  NEXT_WORD_DELAY_MS,
+  TIER_TRANSITION_MS,
+} from '../constants/timings';
+import {
+  buildAnagramGroupIndex,
+  getCompetitionWordCheckResult,
+  mergeUsedCompetitionWords,
+  pickCompetitionWord,
+} from '../utils/competitionWordPicking';
 import type { Tile } from '../types/game';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -17,6 +26,7 @@ export interface CompetitionState {
   allWords: string[];
   bonusCheckWords: string[];
   currentWord: string;
+  currentAcceptedWords: string[];
   tiles: Tile[];
   usedWords: string[];
   isCorrect: boolean;
@@ -34,11 +44,11 @@ export interface CompetitionState {
   wordBonus: number;
   tierTransitionBonus: number | null;
 
-  // These drive useWordPicking filtering
+  // These drive competition word filtering.
   minWordLength: number;
   maxWordLength: number;
 
-  // Needed by useWordPicking (reads from state)
+  // Competition timing configuration.
   startTime: number;
   bonusTime: number;
   alternativeWordBonusTime: number;
@@ -50,9 +60,9 @@ type CompetitionAction =
   | { type: 'START_GAME' }
   | { type: 'GIVE_UP' }
   | { type: 'SET_TILES'; payload: TileUpdater }
-  | { type: 'SET_NEXT_WORD'; payload: { word: string; tiles: Tile[] } }
+  | { type: 'SET_NEXT_WORD'; payload: { word: string; acceptedWords: string[]; tiles: Tile[] } }
   | { type: 'NO_MORE_WORDS' }
-  | { type: 'CORRECT_WORD' }
+  | { type: 'CORRECT_WORD'; payload: { solvedWord: string } }
   | { type: 'AWARD_ALT_BONUS' }
   | { type: 'CLEAR_ALT_BONUS' }
   | { type: 'TICK' }
@@ -79,13 +89,14 @@ const resolveWordList = () => {
   };
 };
 
-const buildInitialState = (): CompetitionState => {
+export const buildCompetitionInitialState = (): CompetitionState => {
   const { allWords, bonusCheckWords } = resolveWordList();
   const initialTier = getTierConfig(0);
   return {
     allWords,
     bonusCheckWords,
     currentWord: '',
+    currentAcceptedWords: [],
     tiles: [],
     usedWords: [],
     isCorrect: false,
@@ -110,12 +121,15 @@ const buildInitialState = (): CompetitionState => {
 
 // ── Reducer ──────────────────────────────────────────────────────────────────
 
-function reducer(state: CompetitionState, action: CompetitionAction): CompetitionState {
+export function competitionReducer(
+  state: CompetitionState,
+  action: CompetitionAction
+): CompetitionState {
   switch (action.type) {
     case 'START_GAME': {
       const initialTier = getTierConfig(0);
       return {
-        ...buildInitialState(),
+        ...buildCompetitionInitialState(),
         timeLeft: initialTier.startTime,
         isPlaying: true,
         tierTransitionBonus: 0,
@@ -136,7 +150,8 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
       return {
         ...state,
         currentWord: action.payload.word,
-        usedWords: [...state.usedWords, action.payload.word],
+        currentAcceptedWords: action.payload.acceptedWords,
+        usedWords: mergeUsedCompetitionWords(state.usedWords, action.payload.acceptedWords),
         tiles: action.payload.tiles,
         isCorrect: false,
         isBonusWord: false,
@@ -148,7 +163,8 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
         allWordsCompleted: true,
       };
     case 'CORRECT_WORD': {
-      let nextScore = state.score + state.currentWord.length;
+      const solvedWord = action.payload.solvedWord;
+      let nextScore = state.score + solvedWord.length;
       let nextTimeLeft = state.timeLeft + state.wordBonus;
       let nextTierWordsFound = state.tierWordsFound + 1;
       let nextTierIndex = state.tierIndex;
@@ -178,9 +194,10 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
 
       return {
         ...state,
+        currentWord: solvedWord,
         isCorrect: true,
         isBonusWord: false,
-        tiles: state.currentWord.split('').map((letter, index) => ({ letter, id: index })),
+        tiles: solvedWord.split('').map((letter, index) => ({ letter, id: index })),
         wordsFound: state.wordsFound + 1,
         score: nextScore,
         timeLeft: nextTimeLeft,
@@ -217,10 +234,94 @@ function reducer(state: CompetitionState, action: CompetitionAction): Competitio
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCompetitionState() {
-  const [state, dispatch] = useReducer(reducer, undefined, buildInitialState);
+  const [state, dispatch] = useReducer(
+    competitionReducer,
+    undefined,
+    buildCompetitionInitialState
+  );
+  const bonusAwardedWordsRef = useRef<Set<string>>(new Set());
+  const currentWordScoredRef = useRef(false);
+  const pickNewWordRef = useRef<() => void>(() => {});
 
-  const { words, wordsSet, bonusCheckWordsSet, checkWord, resetBonusRef } =
-    useWordPicking(state, dispatch);
+  const words = useMemo(
+    () =>
+      state.allWords.filter(
+        (word) => word.length >= state.minWordLength && word.length <= state.maxWordLength
+      ),
+    [state.allWords, state.minWordLength, state.maxWordLength]
+  );
+  const wordsSet = useMemo(() => new Set(words), [words]);
+  const bonusCheckWordsSet = useMemo(
+    () => new Set(state.bonusCheckWords),
+    [state.bonusCheckWords]
+  );
+  const currentAcceptedWordsSet = useMemo(
+    () => new Set(state.currentAcceptedWords),
+    [state.currentAcceptedWords]
+  );
+  const anagramGroups = useMemo(() => buildAnagramGroupIndex(words), [words]);
+
+  const resetBonusRef = useCallback(() => {
+    bonusAwardedWordsRef.current = new Set();
+    currentWordScoredRef.current = false;
+  }, []);
+
+  const pickNewWord = useCallback(() => {
+    const availableWords = words.filter((word) => !state.usedWords.includes(word));
+
+    if (availableWords.length === 0) {
+      dispatch({ type: 'NO_MORE_WORDS' });
+      return;
+    }
+
+    const selection = pickCompetitionWord(availableWords, words, anagramGroups);
+    if (!selection) {
+      dispatch({ type: 'NO_MORE_WORDS' });
+      return;
+    }
+
+    resetBonusRef();
+    dispatch({ type: 'SET_NEXT_WORD', payload: selection });
+  }, [state.usedWords, words, anagramGroups, resetBonusRef]);
+
+  useEffect(() => {
+    pickNewWordRef.current = pickNewWord;
+  }, [pickNewWord]);
+
+  const checkWord = useCallback(() => {
+    if (currentWordScoredRef.current) {
+      return;
+    }
+
+    const currentTileWord = state.tiles.map((tile) => tile.letter).join('');
+    const result = getCompetitionWordCheckResult({
+      currentTileWord,
+      currentWord: state.currentWord,
+      acceptedWordsSet: currentAcceptedWordsSet,
+      bonusCheckWordsSet,
+      filteredWordsSet: wordsSet,
+      bonusAwardedWords: bonusAwardedWordsRef.current,
+    });
+
+    if (result === 'correct') {
+      currentWordScoredRef.current = true;
+      dispatch({ type: 'CORRECT_WORD', payload: { solvedWord: currentTileWord } });
+      setTimeout(() => pickNewWordRef.current(), NEXT_WORD_DELAY_MS);
+      return;
+    }
+
+    if (result === 'bonus') {
+      dispatch({ type: 'AWARD_ALT_BONUS' });
+      bonusAwardedWordsRef.current.add(currentTileWord);
+      setTimeout(() => dispatch({ type: 'CLEAR_ALT_BONUS' }), BONUS_ANIMATION_MS);
+    }
+  }, [state.tiles, state.currentWord, currentAcceptedWordsSet, bonusCheckWordsSet, wordsSet]);
+
+  useEffect(() => {
+    if (state.isPlaying && state.currentWord === '') {
+      pickNewWord();
+    }
+  }, [state.isPlaying, state.currentWord, pickNewWord]);
 
   // Timer — paused during tier transition animation
   useEffect(() => {
@@ -259,8 +360,13 @@ export function useCompetitionState() {
     if (!state.isPlaying || state.isCorrect || state.currentWord.length < 2) {
       return;
     }
-    dispatch({ type: 'SET_TILES', payload: buildShuffledTiles(state.currentWord) });
-  }, [state.currentWord, state.isCorrect, state.isPlaying]);
+    dispatch({
+      type: 'SET_TILES',
+      payload: buildShuffledTiles(state.currentWord, Math.random, {
+        forbiddenWords: state.currentAcceptedWords,
+      }),
+    });
+  }, [state.currentWord, state.currentAcceptedWords, state.isCorrect, state.isPlaying]);
 
   const actions = useMemo(
     () => ({
@@ -284,6 +390,7 @@ export function useCompetitionState() {
       words,
       wordsSet,
       bonusCheckWordsSet,
+      currentAcceptedWordsSet,
     },
     actions,
     wordsFoundText,

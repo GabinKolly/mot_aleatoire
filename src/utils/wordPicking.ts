@@ -4,7 +4,11 @@ import {
 } from '../constants/gameConfig';
 import type { Tile } from '../types/game';
 
-type Rng = () => number;
+export type Rng = () => number;
+
+export interface ShuffleWordOptions {
+  forbiddenWords?: Iterable<string>;
+}
 
 interface WordEntry {
   word: string;
@@ -36,14 +40,81 @@ const canBeSolvedWithOneMove = (shuffled: string, original: string): boolean => 
   return false;
 };
 
+const isValidShuffledWord = (
+  shuffledWord: string,
+  original: string,
+  forbiddenWordsSet: ReadonlySet<string>
+): boolean => {
+  if (shuffledWord === original || forbiddenWordsSet.has(shuffledWord)) {
+    return false;
+  }
+
+  if (original.length >= 5 && canBeSolvedWithOneMove(shuffledWord, original)) {
+    return false;
+  }
+
+  return true;
+};
+
+const findDeterministicShuffleFallback = (
+  word: string,
+  forbiddenWordsSet: ReadonlySet<string>
+): string | null => {
+  if (word.length > 8) {
+    return null;
+  }
+
+  const letterCounts = new Map<string, number>();
+  word.split('').forEach((letter) => {
+    letterCounts.set(letter, (letterCounts.get(letter) ?? 0) + 1);
+  });
+
+  const uniqueLetters = [...letterCounts.keys()].sort();
+  const candidate = new Array<string>(word.length);
+
+  const search = (index: number): string | null => {
+    if (index === word.length) {
+      const shuffledWord = candidate.join('');
+      return isValidShuffledWord(shuffledWord, word, forbiddenWordsSet)
+        ? shuffledWord
+        : null;
+    }
+
+    for (const letter of uniqueLetters) {
+      const remaining = letterCounts.get(letter) ?? 0;
+      if (remaining === 0) {
+        continue;
+      }
+
+      letterCounts.set(letter, remaining - 1);
+      candidate[index] = letter;
+      const result = search(index + 1);
+      letterCounts.set(letter, remaining);
+
+      if (result) {
+        return result;
+      }
+    }
+
+    return null;
+  };
+
+  return search(0);
+};
+
 /**
  * Shuffle a word's letters using Fisher-Yates, ensuring the result is not
  * trivially solvable. Accepts an optional `rng` function (defaults to Math.random).
  */
-export const shuffleWord = (word: string, rng: Rng = Math.random): string[] => {
+export const shuffleWord = (
+  word: string,
+  rng: Rng = Math.random,
+  options: ShuffleWordOptions = {}
+): string[] => {
   const letters = word.split('');
   let shuffled = [...letters];
   let attempts = 0;
+  const forbiddenWordsSet = new Set(options.forbiddenWords ?? []);
 
   do {
     shuffled = [...letters];
@@ -55,16 +126,15 @@ export const shuffleWord = (word: string, rng: Rng = Math.random): string[] => {
     attempts += 1;
     const shuffledWord = shuffled.join('');
 
-    if (shuffledWord === word) {
-      continue;
+    if (isValidShuffledWord(shuffledWord, word, forbiddenWordsSet)) {
+      return shuffled;
     }
-
-    if (word.length >= 5 && canBeSolvedWithOneMove(shuffledWord, word)) {
-      continue;
-    }
-
-    break;
   } while (attempts < SHUFFLE_MAX_ATTEMPTS);
+
+  const fallback = findDeterministicShuffleFallback(word, forbiddenWordsSet);
+  if (fallback) {
+    return fallback.split('');
+  }
 
   return shuffled;
 };
@@ -73,15 +143,12 @@ export const shuffleWord = (word: string, rng: Rng = Math.random): string[] => {
  * Build tile objects from a shuffled word.
  * Accepts an optional `rng` function (defaults to Math.random).
  */
-export const buildShuffledTiles = (word: string, rng: Rng = Math.random): Tile[] => {
-  let shuffled = shuffleWord(word, rng);
-  let attempts = 1;
-
-  while (shuffled.join('') === word && attempts < 200) {
-    shuffled = shuffleWord(word, rng);
-    attempts += 1;
-  }
-
+export const buildShuffledTiles = (
+  word: string,
+  rng: Rng = Math.random,
+  options: ShuffleWordOptions = {}
+): Tile[] => {
+  const shuffled = shuffleWord(word, rng, options);
   return shuffled.map((letter, index) => ({ letter, id: index }));
 };
 

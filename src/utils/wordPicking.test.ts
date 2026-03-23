@@ -37,6 +37,19 @@ describe('shuffleWord', () => {
     expect(result).toHaveLength(2);
     expect([...result].sort()).toEqual(['A', 'B']);
   });
+
+  it('falls back to a deterministic non-original arrangement when rng gets stuck', () => {
+    const result = shuffleWord('ABC', () => 0.999999);
+    expect(result).toEqual(['A', 'C', 'B']);
+  });
+
+  it('rejects forbidden accepted anagrams', () => {
+    const result = shuffleWord('ABC', () => 0.999999, {
+      forbiddenWords: ['ACB', 'BAC', 'BCA', 'CAB'],
+    });
+
+    expect(result).toEqual(['C', 'B', 'A']);
+  });
 });
 
 describe('buildShuffledTiles', () => {
@@ -60,6 +73,14 @@ describe('buildShuffledTiles', () => {
     const t1 = buildShuffledTiles('RENARD', createSeededRandom(5));
     const t2 = buildShuffledTiles('RENARD', createSeededRandom(5));
     expect(t1).toEqual(t2);
+  });
+
+  it('avoids forbidden accepted anagrams when building tiles', () => {
+    const tiles = buildShuffledTiles('ABC', () => 0.999999, {
+      forbiddenWords: ['ACB', 'BAC', 'BCA', 'CAB'],
+    });
+
+    expect(tiles.map((tile) => tile.letter).join('')).toBe('CBA');
   });
 });
 

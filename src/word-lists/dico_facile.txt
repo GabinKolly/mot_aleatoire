@@ -4744,6 +4744,7 @@ mêler
 même
 môme
 nacelle
+nage
 nager
 nageur
 naguère
@@ -5111,7 +5112,6 @@ paprika
 papyrus
 paquet
 par
-para
 parade
 parader
 paradis
@@ -6212,6 +6212,7 @@ russe
 rustre
 rythme
 râler
+râpe
 râper
 râteau
 règlement

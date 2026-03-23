@@ -34,11 +34,11 @@ const HOW_TO_PLAY_PARAGRAPHS = [
   "Des mots mélangés apparaissent un par un, et vous devez retrouver le mot d'origine et remettre les lettres dans l'ordre avant la fin du chrono.",
   'Chaque mot que vous trouvez vous donne 15 secondes supplémentaires et un nombre de points équivalent à la longueur du mot.',
   'Si vous ne trouvez pas le mot à temps, la partie se termine.',
-  "Les mots peuvent être n'importe quel mot commun en français : verbe à l'infinitif, adjectif, onomatopée, langage familier...",
+  "Les mots peuvent être n'importe quel mot commun en français : verbe à l'infinitif, adjectif, onomatopée, langage familier...",
   `Il n'y aura pas de verbe conjugué, de pluriel ou de féminin (sauf noms communs comme "arrivée" ou mots existant seulement au pluriel comme "prémices").`,
   `Si vous écrivez un mot reconnu mais différent de celui attendu, il s'illuminera en jaune et vous donnera un bonus de temps de 5 secondes, mais il ne sera pas validé.`,
-  'Tous les 10 mots, vous passez au niveau suivant : le temps restant est ajouté à votre score, puis le chrono revient à 45 secondes et la longueur des mots augmente.',
-  "À partir du niveau 6, les mots ne deviennent pas plus longs, mais le temps de départ et les bonus de temps diminuent. Le niveau 8 est le niveau final : serez-vous la première personne à l'atteindre ?",
+  'Tous les 10 mots, vous passez au niveau suivant : le temps restant est ajouté à votre score, puis le chrono revient à 45 secondes et la longueur des mots augmente.',
+  "À partir du niveau 6, les mots ne deviennent pas plus longs, mais le temps de départ et les bonus de temps diminuent. Le niveau 8 est le niveau final : serez-vous la première personne à l'atteindre ?",
 ] as const;
 
 interface CompetitionGameProps {
@@ -94,6 +94,10 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
   const showCoreZone = isPreStart || state.isPlaying || hasEnded;
   const showTierTransition =
     state.isPlaying && !state.isCorrect && state.tierTransitionBonus !== null;
+  const tierTransitionScoreDelta =
+    typeof state.tierTransitionBonus === 'number' && state.tierTransitionBonus > 0
+      ? state.tierTransitionBonus
+      : null;
 
   const endScreenTiles =
     state.currentWord.length > 0
@@ -313,6 +317,8 @@ export default function CompetitionGame({ onBack }: CompetitionGameProps) {
                 wordsFound={state.wordsFound}
                 score={state.score}
                 wordsFoundText={wordsFoundText}
+                scoreDelta={tierTransitionScoreDelta}
+                scoreDeltaVariant="competition"
               />
 
               {isPreStart && (

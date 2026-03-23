@@ -407,8 +407,8 @@ a {
 }
 
 .mm-tier-transition__badge {
-  color: #b459dc;
-  border: 0.2rem solid #b459dc;
+  color: #36b4f5;
+  border: 0.2rem solid #36b4f5;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.45);
   font-weight: 700;
@@ -435,6 +435,7 @@ a {
 }
 
 .mm-stat-card {
+  position: relative;
   border-radius: 1.05rem;
   min-height: 6rem;
   padding: 0.75rem 0.5rem 0.6rem;
@@ -515,6 +516,29 @@ a {
   line-height: 1;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.mm-stat-card__delta {
+  position: absolute;
+  top: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mm-ink);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.mm-stat-card__delta--competition {
+  top: 0;
+  left: auto;
+  right: 0.2rem;
+  transform: translateY(-50%);
+  font-size: clamp(1.085rem, 3.78vw, 1.47rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
 }
 
 .mm-mp-stats {

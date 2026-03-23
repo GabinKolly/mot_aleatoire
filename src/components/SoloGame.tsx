@@ -92,7 +92,7 @@ export default function SoloGame({ onBack, onOpenMultiplayer }: SoloGameProps) {
   const shouldShowBestScoreMessage = state.lastGameWasScoreEligible;
   const bestScoreMessage = shouldShowBestScoreMessage
     ? state.lastGameWasNewRecord
-      ? 'Vous avez battu le meilleur score !'
+      ? 'Vous avez battu votre meilleur score !'
       : `Le meilleur score est de ${
           Number.isInteger(state.currentListHighScore) ? state.currentListHighScore : '-'
         }.`

@@ -7444,6 +7444,7 @@ virgule
 viril
 virtuel
 virus
+visa
 visage
 viser
 viseur
@@ -7657,7 +7658,6 @@ zéro
 élixir
 éloge
 éloigner
-élusif
 élégance
 élégant
 élément

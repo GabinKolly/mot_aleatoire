@@ -6,9 +6,18 @@ interface SoloStatsRowProps {
   wordsFound: number;
   score: number;
   wordsFoundText?: string;
+  scoreDelta?: number | null;
+  scoreDeltaVariant?: 'default' | 'competition';
 }
 
-export default function SoloStatsRow({ timeLeft, wordsFound, score, wordsFoundText: wordsFoundTextOverride }: SoloStatsRowProps) {
+export default function SoloStatsRow({
+  timeLeft,
+  wordsFound,
+  score,
+  wordsFoundText: wordsFoundTextOverride,
+  scoreDelta = null,
+  scoreDeltaVariant = 'default',
+}: SoloStatsRowProps) {
   const timeText = formatClock(timeLeft);
   const wordsFoundText = wordsFoundTextOverride ?? `${wordsFound}`;
   const scoreText = `${score}`;
@@ -28,6 +37,17 @@ export default function SoloStatsRow({ timeLeft, wordsFound, score, wordsFoundTe
         <div className="mm-stat-card__label">MOTS</div>
       </div>
       <div className="mm-stat-card mm-stat-card--red">
+        {scoreDelta !== null && (
+          <span
+            className={`mm-stat-card__delta ${
+              scoreDeltaVariant === 'competition'
+                ? 'mm-stat-card__delta--competition'
+                : ''
+            }`.trim()}
+          >
+            +{scoreDelta}
+          </span>
+        )}
         <div className="mm-stat-card__value" style={getStatValueSizingStyle(scoreText)}>
           {scoreText}
         </div>

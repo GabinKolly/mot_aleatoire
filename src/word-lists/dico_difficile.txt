@@ -10535,6 +10535,7 @@ elliptique
 élucubration
 élucubrer
 éluder
+élusif
 élution
 élyséen
 élytre
@@ -12120,6 +12121,7 @@ facsimilé
 factice
 factieux
 factionnaire
+facto
 factorerie
 factoriel
 factorisation

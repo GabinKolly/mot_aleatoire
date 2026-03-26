@@ -1497,7 +1497,6 @@ civil
 civilisation
 civique
 clair
-claire
 clairement
 clameur
 clan
@@ -4879,6 +4878,7 @@ montage
 montagne
 monter
 monteur
+montre
 montrer
 monture
 monument
@@ -5194,6 +5194,7 @@ onze
 onzième
 opacité
 opaque
+opéra
 opérateur
 opération
 opérationnel
@@ -5736,6 +5737,7 @@ possibilité
 possible
 post
 postal
+poste
 poster
 postérité
 postier

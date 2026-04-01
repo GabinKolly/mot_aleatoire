@@ -271,6 +271,7 @@ alpaga
 alpage
 alpha
 alphabet
+alpin
 altérer
 alternance
 alternatif
@@ -748,6 +749,7 @@ baron
 baroque
 barque
 barrage
+barre
 barreau
 barrer
 barrière
@@ -1810,6 +1812,7 @@ contemporain
 contenir
 contenter
 contentieux
+conter
 contestation
 contester
 contexte
@@ -1827,6 +1830,7 @@ contrainte
 contraire
 contrairement
 contraste
+contre
 contrepartie
 contrer
 contribuable
@@ -1870,6 +1874,7 @@ cordon
 coréen
 coriace
 corne
+cornée
 cornet
 corporation
 corps
@@ -3218,9 +3223,11 @@ flûte
 flux
 focus
 foetus
+foin
 foire
 foirer
 foireux
+fois
 foison
 folie
 foncer
@@ -3272,6 +3279,7 @@ fouet
 fougère
 fougue
 fouiller
+fouine
 fouiner
 foulard
 foule
@@ -3527,6 +3535,7 @@ golfe
 golfeur
 gonfler
 gong
+gore
 gorge
 gorille
 gosier
@@ -4581,6 +4590,7 @@ manteau
 manuel
 manuscrit
 maquillage
+maracas
 marathon
 marbre
 marchand
@@ -4814,6 +4824,7 @@ miser
 misérable
 misère
 miséricorde
+miso
 missile
 mission
 mixer
@@ -4846,6 +4857,7 @@ moindre
 moine
 moineau
 moins
+mois
 moisi
 moisir
 moisson
@@ -7466,6 +7478,7 @@ tronche
 trône
 trop
 trophée
+trot
 trottoir
 trou
 trouble
@@ -7759,6 +7772,7 @@ vouloir
 voulu
 vous
 voûte
+voyage
 voyager
 voyageur
 voyance

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "backup:leaderboard": "bash scripts/backup-leaderboard.sh",
     "dev": "vite",
     "dev:partykit": "npx partykit dev",
     "deploy:partykit": "npx partykit deploy",

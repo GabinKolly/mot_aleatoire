@@ -1570,6 +1570,7 @@ cohésif
 cohésion
 cohorte
 cohue
+coiffe
 coiffeur
 coiffure
 coin
@@ -2376,7 +2377,6 @@ dinde
 dindon
 dîner
 dingue
-diocèse
 diode
 diplomate
 diplomatie
@@ -3690,6 +3690,7 @@ harem
 hareng
 haricot
 harmonie
+harpe
 harpon
 hasard
 hâte
@@ -4424,6 +4425,7 @@ localiser
 localité
 locataire
 location
+loft
 loge
 logement
 loger
@@ -5070,6 +5072,7 @@ nirvana
 niveau
 noble
 noblesse
+noce
 nocif
 nocturne
 noël
@@ -6510,6 +6513,7 @@ ringard
 rire
 risible
 risotto
+risque
 risquer
 rite
 rituel
@@ -7163,6 +7167,7 @@ taboulé
 tache
 tacite
 tacle
+tacler
 tact
 tactile
 tactique

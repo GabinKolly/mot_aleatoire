@@ -9511,6 +9511,7 @@ dinguerie
 dinka
 dinosaure
 diocésain
+diocèse
 dionée
 dionysiaque
 dioptrie
@@ -18066,7 +18067,6 @@ loden
 loess
 lof
 lofer
-loft
 log
 logarithme
 logarithmique
@@ -29537,7 +29537,6 @@ tachyon
 tacitement
 taciturne
 tack
-tacler
 taco
 tacon
 tacot

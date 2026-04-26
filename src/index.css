@@ -210,7 +210,7 @@ a {
 }
 
 .mm-menu-button {
-  width: 100%;
+  width: fit-content;
   min-height: var(--mm-menu-button-height);
   border: 0;
   border-radius: 1.15rem;
@@ -361,7 +361,6 @@ a {
 
 .mm-solo-core {
   margin-top: 1.25rem;
-  flex: 1;
 }
 
 .mm-solo-core__stack {
@@ -1536,6 +1535,7 @@ a {
   width: 100%;
   max-width: 26rem;
   margin-inline: auto;
+  margin-top: 7.1rem;
   padding: 0.75rem 0 0.9rem;
   text-align: center;
   color: var(--mm-ink);
